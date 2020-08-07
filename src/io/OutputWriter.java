@@ -1,6 +1,7 @@
 package io;
 
 public interface OutputWriter {
-	void print(String str);
-	void println(String str);
+	void print(String s);
+	void println(String s);
+	String getLineSeparator();
 }

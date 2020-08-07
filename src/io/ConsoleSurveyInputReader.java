@@ -1,8 +1,7 @@
 package io;
 
 import java.io.IOException;
-
-import io.ConsoleInputReader;
+import java.util.List;
 
 public class ConsoleSurveyInputReader implements SurveyInputReader {
 	private InputReader in;
@@ -16,32 +15,58 @@ public class ConsoleSurveyInputReader implements SurveyInputReader {
 
 		try {
 			line = in.readln();
-		} catch (IOException ex) {
-			ex.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 			line = null;
 		}
 
 		return line;
 	}
 
-	private Integer readInt() {
+	private Integer readInteger() {
 		Integer num;
 
 		try {
-			num = in.readInt();
-		} catch (IOException ex) {
-			ex.printStackTrace();
+			num = in.readInteger();
+		} catch (IOException e) {
+			e.printStackTrace();
 			num = null;
 		}
 
 		return num;
 	}
 
-	public String readMenuChoice() { return readln(); }
+	private boolean isNullOrEmpty(List<String> list) {
+		return list == null || list.isEmpty();
+	}
+
+	public String readValidMenuChoice(List<String> options) {
+		return readValidMenuChoice(options, 0);
+	}
+
+	public String readValidMenuChoice(List<String> options, int offset) {
+		Integer choiceNum;
+		String choiceStr = "";
+
+		if (!isNullOrEmpty(options)) {
+			// Get user menu choice.
+			choiceNum = readMenuChoice();
+			if (choiceNum != null) {
+				try {
+					// Get choice string.
+					choiceStr = options.get(choiceNum + offset);
+				} catch (IndexOutOfBoundsException ignored) { }
+			}
+		}
+
+		return choiceStr;
+	}
+
+	public Integer readMenuChoice() { return readInteger(); }
 
 	public String readQuestionPrompt() { return readln(); }
 
-	public Integer readQuestionChoiceCount() { return readInt(); }
+	public Integer readQuestionChoiceCount() { return readInteger(); }
 
 	public String readQuestionChoice() { return readln(); }
 

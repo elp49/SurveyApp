@@ -1,9 +1,13 @@
 package io;
 
+import java.util.List;
+
 public interface SurveyInputReader {
-	public String readMenuChoice();
-	public String readQuestionPrompt();
-	public Integer readQuestionChoiceCount();
-	public String readQuestionChoice();
-	public String readQuestionResponse();
+	String readValidMenuChoice(List<String> options);
+	String readValidMenuChoice(List<String> options, int offset);
+	Integer readMenuChoice();
+	String readQuestionPrompt();
+	Integer readQuestionChoiceCount();
+	String readQuestionChoice();
+	String readQuestionResponse();
 }

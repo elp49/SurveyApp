@@ -2,8 +2,6 @@ package io;
 
 import java.util.List;
 
-import io.ConsoleOutputWriter;
-
 public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
 	private OutputWriter out;
 	
@@ -11,27 +9,40 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
 		out = new ConsoleOutputWriter();
 	}
 
-	private void println(String str) { out.println(str); }
+	private void print(String s) { out.print(s); }
 
-	public void displayNote(String note) { println(note); }
+	private void println(String s) { out.println(s); }
+
+	private String getLineSeparator() { return out.getLineSeparator(); }
+
+	public void displayNote(String note) {
+		println("");
+		println(note);
+	}
 
 	public void displayMenu(String prompt, List<String> choices) {
 		displayMenuPrompt(prompt);
-		displayMenuChoices(choices);
+		println("");
+		displayMenuOptions(choices);
 	}
 
-	public void displayMenuPrompt(String prompt) { println(prompt); }
+	public void displayMenuPrompt(String prompt) {
+		println("");
+		println(prompt);
+	}
 
-	public void displayMenuChoices(List<String> choices) {
+	public void displayMenuOptions(List<String> options) {
 		int i;
 		String line;
 
-		for (i = 0; i < choices.size(); i++) {
-			line = i+1 + ") " + choices.get(i);
+		for (i = 0; i < options.size(); i++) {
+			line = i+1 + ") " + options.get(i);
 			println(line);
 		}
 	}
 
+	//TODO: decide if should remove this method and dynamically create a menu with survey names as options.
+	// and then use abody display menu function instead.
 	public void displayAllSurveyNames(List<String> names) {
 		int i;
 		String line;

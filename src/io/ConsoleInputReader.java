@@ -5,8 +5,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.NumberFormatException;
 
-import io.InputReader;
-
 public class ConsoleInputReader implements InputReader {
 	private BufferedReader reader;
 
@@ -14,20 +12,18 @@ public class ConsoleInputReader implements InputReader {
 
 	public String readln() throws IOException { return reader.readLine(); }
 
-	public Integer readInt() throws IOException {
+	public Integer readInteger() throws IOException {
 		String input = readln();
-		return parseInt(input);
+		return parseInteger(input);
 	}
 
-	private Integer parseInt(String str) {
-		int num;
+	private Integer parseInteger(String s) {
 		Integer result;
 
 		try {
-			num = Integer.parseInt(str);
-			result = new Integer(num);
-		} catch (NumberFormatException ex) {
-			ex.printStackTrace();
+			result = Integer.parseInt(s);
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
 			result = null;
 		}
 
