@@ -14,7 +14,8 @@ public class SurveyApp {
     public static SurveyOutputWriter out;
     private Survey survey = null;
 
-    public SurveyApp() { }
+    public SurveyApp() {
+    }
 
     public static void main(String[] args) {
         SurveyApp app = new SurveyApp();
@@ -39,48 +40,80 @@ public class SurveyApp {
             choiceStr = in.readValidMenuChoice(MainMenu.OPTIONS, -1);
 
             // Perform user action.
-			if (!isNullOrEmpty(choiceStr)) {
+            if (!isNullOrEmpty(choiceStr)) {
                 switch (choiceStr) {
                     case MainMenu.CREATE:
 
                         QuestionFactory qf = new QuestionFactory();
                         survey = new Survey(qf);
-                        survey.create();
+                        try {
+                            survey.create();
+                        } catch (Exception ignore) {
+                            continue;
+                        }
 
                         break;
+
                     case MainMenu.DISPLAY:
 
                         if (survey == null) displayNoSurveyMessage("display");
-                        else survey.display();
+                        else {
+                            try {
+                                survey.display();
+                            } catch (Exception ignore) {
+                                continue;
+                            }
+                        }
 
                         break;
+
                     case MainMenu.LOAD:
 
                         survey = Survey.load();
-
                         break;
+
                     case MainMenu.SAVE:
 
                         if (survey == null) displayNoSurveyMessage("save");
-                        else survey.save();
+                        else {
+                            try {
+                                survey.save();
+                            } catch (Exception ignore) {
+                                continue;
+                            }
+                        }
 
                         break;
+
                     case MainMenu.TAKE:
 
                         if (survey == null) displayNoSurveyMessage("take");
-                        else survey.take();
+                        else {
+                            try {
+                                survey.take();
+                            } catch (Exception ignore) {
+                                continue;
+                            }
+                        }
 
                         break;
+
                     case MainMenu.MODIFY:
 
                         if (survey == null) displayNoSurveyMessage("modify");
-                        else survey.modify();
+                        else {
+                            try {
+                                survey.modify();
+                            } catch (Exception ignore) {
+                                continue;
+                            }
+                        }
 
                         break;
                 }
-			} else {
+            } else {
                 displayInvalidInputMessage("choice");
-			}
+            }
         } while (!choiceStr.equals(MainMenu.QUIT));
     }
 

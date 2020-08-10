@@ -1,14 +1,13 @@
 package survey.question;
 
-import survey.Survey;
 import survey.SurveyApp;
 
 import java.io.Serializable;
 
 public abstract class Question implements Serializable {
     private static long serialVersionUID = 1L;
-    private String prompt;
-    private int numResponses;
+    protected String prompt;
+    protected int numResponses;
 
     public Question() { }
 
@@ -41,6 +40,7 @@ public abstract class Question implements Serializable {
             SurveyApp.out.displayMenuPrompt("Enter the prompt for your " + questionType + " question:");
             prompt = SurveyApp.in.readQuestionPrompt();
 
+            // Check if valid prompt.
             if (SurveyApp.isNullOrEmpty(prompt)) {
                 SurveyApp.displayInvalidInputMessage("prompt");
             }
@@ -51,6 +51,7 @@ public abstract class Question implements Serializable {
 
     protected int getValidNumResponses() {
         Integer numResponses;
+        boolean isValidNumResponses;
 
         // Get question type.
         String questionType = getQuestionType();
@@ -60,10 +61,11 @@ public abstract class Question implements Serializable {
             SurveyApp.out.displayMenuPrompt("Enter the number of allowed responses for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
-            if (!isValidNumResponses(numResponses)) {
+            // Check if valid number of responses.
+            if (!(isValidNumResponses = isValidNumResponses(numResponses))) {
                 SurveyApp.displayInvalidInputMessage("number");
             }
-        } while (!isValidNumResponses(numResponses));
+        } while (!isValidNumResponses);
 
         return numResponses;
     }

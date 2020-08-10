@@ -17,16 +17,16 @@ public class QuestionFactory implements Serializable {
                 q = null;
                 break;
             case QuestionMenu.MULTI_CHOICE:
-                q = null;
+                q = new MultipleChoiceQuestion();
                 break;
             case QuestionMenu.SHORT_ANSWER:
-                q = null;
+                q = new ShortAnswerQuestion();
                 break;
             case QuestionMenu.ESSAY:
                 q = new EssayQuestion();
                 break;
             case QuestionMenu.DATE:
-                q = null;
+                q = new DateQuestion();
                 break;
             case QuestionMenu.MATCHING:
                 q = null;

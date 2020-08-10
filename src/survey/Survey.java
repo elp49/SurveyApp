@@ -45,8 +45,12 @@ public class Survey implements Serializable {
                     // Use question factory to get new question.
                     q = questionFactory.getQuestion(choiceStr);
 
-                    // Create question specific attributes.
-                    q.create();
+                    try {
+                        // Create question specific attributes.
+                        q.create();
+                    } catch (NullPointerException ignore) {
+                        continue;
+                    }
 
                     // Add question to question list.
                     questionList.add(q);
