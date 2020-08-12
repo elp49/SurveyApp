@@ -1,12 +1,14 @@
 package survey.question;
 
-import survey.Survey;
 import survey.SurveyApp;
 
 public class MultipleChoiceQuestion extends Question {
     protected ChoiceList choiceList;
 
-    public MultipleChoiceQuestion() { }
+    public MultipleChoiceQuestion() {
+        super();
+        choiceList = new ChoiceList();
+    }
 
     public ChoiceList getChoiceList() {
         return choiceList;
@@ -27,7 +29,6 @@ public class MultipleChoiceQuestion extends Question {
 
         // Get valid number of choices.
         numChoices = getValidNumChoices();
-        choiceList = new ChoiceList(numChoices);
 
         // Get valid choices.
         for (i = 0; i < numChoices; i++) {

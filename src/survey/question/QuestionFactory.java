@@ -14,7 +14,7 @@ public class QuestionFactory implements Serializable {
 
         switch (questionType) {
             case QuestionMenu.TRUE_FALSE:
-                q = null;
+                q = new TrueFalseQuestion();
                 break;
             case QuestionMenu.MULTI_CHOICE:
                 q = new MultipleChoiceQuestion();
@@ -29,7 +29,7 @@ public class QuestionFactory implements Serializable {
                 q = new DateQuestion();
                 break;
             case QuestionMenu.MATCHING:
-                q = null;
+                q = new MatchingQuestion();
                 break;
         }
 

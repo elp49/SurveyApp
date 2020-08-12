@@ -9,7 +9,10 @@ public abstract class Question implements Serializable {
     protected String prompt;
     protected int numResponses;
 
-    public Question() { }
+    public Question() {
+        prompt = "";
+        numResponses = 0;
+    }
 
     public String getPrompt() {
         return prompt;
@@ -58,7 +61,7 @@ public abstract class Question implements Serializable {
 
         do {
             // Record number of question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of allowed responses for your " + questionType + " question.");
+            SurveyApp.out.displayMenuPrompt("Enter the number of required responses for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.

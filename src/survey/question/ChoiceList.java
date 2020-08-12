@@ -12,7 +12,9 @@ public class ChoiceList implements Serializable {
 
     public ChoiceList() { choices = new ArrayList<>(); }
 
-    public ChoiceList(int initialCapacity) { choices = new ArrayList<>(initialCapacity); }
+    public ChoiceList(List<String> choices) {
+        this.choices = choices;
+    }
 
     public List<String> getChoices() {
         return choices;
