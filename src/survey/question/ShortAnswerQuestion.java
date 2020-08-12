@@ -3,14 +3,16 @@ package survey.question;
 public class ShortAnswerQuestion extends EssayQuestion {
     protected static final int responseCharLimit = 64;
 
-    public ShortAnswerQuestion() { }
+    public ShortAnswerQuestion() {
+        super();
+    }
 
     @Override
     public String getQuestionType() {
         return "Short Answer";
     }
 
-    public int getResponseSizeLimit() {
+    public int getResponseCharLimit() {
         return responseCharLimit;
     }
 }
