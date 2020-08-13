@@ -6,16 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MatchingQuestion extends Question {
+    protected final int numChoiceLists = 2;
     protected List<ChoiceList> choiceSet;
 
     public MatchingQuestion() {
         super();
-        choiceSet = new ArrayList<>() {
-            {
-                add(new ChoiceList());
-                add(new ChoiceList());
-            }
-        };
+        choiceSet = new ArrayList<>();
     }
 
     @Override
@@ -27,65 +23,55 @@ public class MatchingQuestion extends Question {
         return choiceSet;
     }
 
+    // TODO: figure out if you like the assignment look
+    //  or build() / create() function look better.
     @Override
     public void create() {
-        int i, j;
-        int choiceSetSize = choiceSet.size();
-        int choiceNum = 1;
-        char choiceChar = 'A';
-        String choice;
-
         // Get valid prompt.
         prompt = getValidPrompt();
 
         // Get valid number of matches.
-        numResponses = getValidNumMatches();
+        numResponses = getValidNumResponses("matches");
 
-        // Get valid matching choices.
-        for (i = 0; i < choiceSetSize; i++) {
-            for (j = 0; j < numResponses; j++) {
+        // Build valid matching choice set.
+        choiceSet = getValidChoiceSet();
+    }
 
-                // Display question choice prompt.
-                if (i % 2 == 0) {
-                    SurveyApp.out.displayMenuPrompt("Enter choice " + choiceChar + ").");
-                    choiceChar++;
-                } else {
-                    SurveyApp.out.displayMenuPrompt("Enter choice " + choiceNum + ").");
-                    choiceNum++;
-                }
+    private List<ChoiceList> getValidChoiceSet() {
+        int i;
+        ChoiceList choiceList;
+        List<ChoiceList> result = new ArrayList<>();
 
-                // Get valid choice.
-                choice = getValidChoice();
+        for (i = 1; i <= numChoiceLists; i++) {
+            SurveyApp.out.displayNote("Choice List #" + i);
 
-                // Add choice to choice list.
-                choiceSet.get(i).add(choice);
-            }
+            // Get valid choice list.
+            choiceList = getValidChoiceList();
+
+            // Add choice list to choice set.
+            result.add(choiceList);
         }
+
+        return result;
     }
 
-    protected int getValidNumMatches() {
-        Integer numMatches;
-        boolean isValidNumMatches;
+    protected ChoiceList getValidChoiceList() {
+        int i;
+        String choice;
+        ChoiceList result = new ChoiceList();
 
-        // Get question type.
-        String questionType = getQuestionType();
+        for (i = 1; i <= numResponses; i++) {
+            // Display survey.question choice prompt.
+            SurveyApp.out.displayMenuPrompt("Enter choice " + i + ").");
 
-        do {
-            // Record number of question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of matches for your " + questionType + " question.");
-            numMatches = SurveyApp.in.readQuestionChoiceCount();
+            // Get valid choice.
+            choice = getValidChoice();
 
-            // Check if valid number of choices.
-            if (!(isValidNumMatches = isValidNumMatches(numMatches))) {
-                SurveyApp.displayInvalidInputMessage("number");
-            }
-        } while (!isValidNumMatches);
+            // Add choice to choice list.
+            result.add(choice);
+        }
 
-        return numMatches;
-    }
-
-    protected boolean isValidNumMatches(Integer i) {
-        return i != null && i > 1;
+        return result;
     }
 
     protected String getValidChoice() {
@@ -93,7 +79,6 @@ public class MatchingQuestion extends Question {
         boolean isValidChoice;
 
         do {
-
             // Record choice.
             choice = SurveyApp.in.readQuestionChoice();
 
@@ -108,5 +93,11 @@ public class MatchingQuestion extends Question {
 
     protected boolean isValidChoice(String s) {
         return !SurveyApp.isNullOrEmpty(s);
+    }
+
+    @Override
+    public void display() {
+        SurveyApp.out.displayQuestionPrompt(prompt);
+        SurveyApp.out.displayQuestionChoiceSet(choiceSet);
     }
 }

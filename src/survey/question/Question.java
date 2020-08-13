@@ -24,22 +24,16 @@ public abstract class Question implements Serializable {
 
     public abstract String getQuestionType();
 
-    public void create() {
-        // Get valid prompt.
-        prompt = getValidPrompt();
-
-        // Get valid number of responses.
-        numResponses = getValidNumResponses();
-    }
+    public abstract void create();
 
     protected String getValidPrompt() {
         String prompt;
 
-        // Get question type.
+        // Get survey.question type.
         String questionType = getQuestionType();
 
         do {
-            // Record question prompt.
+            // Record survey.question prompt.
             SurveyApp.out.displayMenuPrompt("Enter the prompt for your " + questionType + " question:");
             prompt = SurveyApp.in.readQuestionPrompt();
 
@@ -53,14 +47,18 @@ public abstract class Question implements Serializable {
     }
 
     protected int getValidNumResponses() {
+        return getValidNumResponses("responses");
+    }
+
+    protected int getValidNumResponses(String responseType) {
         Integer numResponses;
         boolean isValidNumResponses;
 
-        // Get question type.
+        // Get survey.question type.
         String questionType = getQuestionType();
 
         do {
-            // Record number of question responses.
+            // Record number of survey.question responses.
             SurveyApp.out.displayMenuPrompt("Enter the number of required responses for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
@@ -76,4 +74,6 @@ public abstract class Question implements Serializable {
     protected boolean isValidNumResponses(Integer i) {
         return i != null && i > 0;
     }
+
+    public abstract void display();
 }

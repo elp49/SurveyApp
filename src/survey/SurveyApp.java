@@ -1,13 +1,13 @@
 package survey;
 
+import survey.io.ConsoleSurveyInputReader;
+import survey.io.ConsoleSurveyOutputWriter;
+import survey.io.SurveyInputReader;
+import survey.io.SurveyOutputWriter;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import io.SurveyInputReader;
-import io.SurveyOutputWriter;
-import io.ConsoleSurveyInputReader;
-import io.ConsoleSurveyOutputWriter;
-import survey.question.QuestionFactory;
 
 public class SurveyApp {
     public static SurveyInputReader in;
@@ -56,7 +56,7 @@ public class SurveyApp {
 
                     case MainMenu.DISPLAY:
 
-                        if (survey == null) displayNoSurveyMessage("display");
+                        if (survey == null) displayNoSurveyLoadedMessage("display");
                         else {
                             try {
                                 survey.display();
@@ -69,17 +69,72 @@ public class SurveyApp {
 
                     case MainMenu.LOAD:
 
-                        survey = Survey.load();
+                        String surveyName;
+
+                        // Get all survey names.
+                        List<String> allSurveyNames = Survey.getAllSurveyNames();
+
+                        // Get all survey file paths.
+                        List<String> allSurveyPaths = Survey.getAllSurveyFilePaths();
+
+                        // Display survey menu.
+                        out.displayMenu("Please select a file to load:", allSurveyNames);
+
+                        // Get user menu choice.
+                        surveyName = in.readValidMenuChoice(allSurveyNames, -1);
+
+                        // Get index of survey name.
+                        int index = allSurveyNames.indexOf(surveyName);
+
+                        // Get survey file path.
+                        String surveyPath = allSurveyPaths.get(index);
+
+
+                        try {
+                            survey = Survey.deserialize(surveyPath);
+                        } catch (IOException | ClassNotFoundException ignore) {
+                            String choice;
+                            String DELETE = "Yes, delete it.";
+                            String KEEP = "No, keep it.";
+                            List<String> options = new ArrayList<>() {
+                                {
+                                    add(DELETE);
+                                    add(KEEP);
+                                }
+                            };
+                            out.displayNote("This serialized survey file have become corrupted. This is likely because the Survey App has been updated since this file was saved.");
+                            out.displayMenu("Would you like to delete it now?", options);
+                            choice = in.readValidMenuChoice(options, -1);
+
+                            // TODO: implement deleting survey from survey class.
+                            if (choice.equals(DELETE)) {
+                                boolean wasDeleted;
+                                //throws IllegalArgumentException, SecurityException
+                                try {
+                                    wasDeleted = Survey.delete(surveyPath);
+                                    if (wasDeleted) out.displayNote("Successfully deleted.");
+                                    else out.displayNote("Deletion was unsuccessful. :,(");
+                                } catch (IllegalArgumentException e) {
+                                    out.displayNote("Oops, that file does not exist. This could be an issue relating to the file path.");
+                                } catch (SecurityException e) {
+                                    out.displayNote("STOP! You do not have the security permissions to delete this file. This incident will be reported to Donald Trump.");
+                                }
+
+
+                            }
+                        }
                         break;
 
                     case MainMenu.SAVE:
 
-                        if (survey == null) displayNoSurveyMessage("save");
+                        if (survey == null) displayNoSurveyLoadedMessage("save");
                         else {
                             try {
-                                survey.save();
-                            } catch (Exception ignore) {
-                                continue;
+                                Survey.serialize(survey);
+                                out.displayNote("Saved successfully.");
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                out.displayNote("There was an error while saving your survey.");
                             }
                         }
 
@@ -87,7 +142,7 @@ public class SurveyApp {
 
                     case MainMenu.TAKE:
 
-                        if (survey == null) displayNoSurveyMessage("take");
+                        if (survey == null) displayNoSurveyLoadedMessage("take");
                         else {
                             try {
                                 survey.take();
@@ -100,7 +155,7 @@ public class SurveyApp {
 
                     case MainMenu.MODIFY:
 
-                        if (survey == null) displayNoSurveyMessage("modify");
+                        if (survey == null) displayNoSurveyLoadedMessage("modify");
                         else {
                             try {
                                 survey.modify();
@@ -117,7 +172,7 @@ public class SurveyApp {
         } while (!choiceStr.equals(MainMenu.QUIT));
     }
 
-    public static void displayNoSurveyMessage(String action) {
+    public static void displayNoSurveyLoadedMessage(String action) {
         String message;
 
         if (!isNullOrEmpty(action)) message = "You must have a survey loaded in order to " + action + " it.";
@@ -128,6 +183,18 @@ public class SurveyApp {
 
     public static void displayInvalidInputMessage(String inputType) {
         out.displayNote("You entered an invalid " + inputType + ".");
+    }
+
+    /**
+     * Create a name for the serialized file on disk.
+     *
+     * @param survey The survey to be serialized.
+     * @return The serialized survey filename.
+     */
+    protected static String createFilename(Survey survey) {
+        // Create survey filename.
+        String filename = "Survey";
+        return filename;
     }
 
     public static boolean isNullOrEmpty(String s) {

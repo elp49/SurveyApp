@@ -1,8 +1,10 @@
 package survey.question;
 
+import survey.SurveyApp;
+
 public class DateQuestion extends ShortAnswerQuestion {
-    protected static final String dateFormat = "MM-DD-YYYY";
-    protected static final int responseCharLimit = dateFormat.length();
+    protected final String dateFormat = "MM-DD-YYYY";
+    protected final int responseCharLimit = dateFormat.length();
 
     public DateQuestion() {
         super();
@@ -13,7 +15,25 @@ public class DateQuestion extends ShortAnswerQuestion {
         return "Date";
     }
 
-    public static String getDateFormat() {
+    public String getDateFormat() {
         return dateFormat;
+    }
+
+    @Override
+    public void create() {
+        SurveyApp.out.displayNote("Dates will be recorded in the following format: " + dateFormat);
+
+        // Get valid prompt.
+        prompt = getValidPrompt();
+
+        // Get valid number of responses.
+        numResponses = getValidNumResponses("answers");
+    }
+
+    @Override
+    public void display() {
+        SurveyApp.out.displayQuestionPrompt(prompt);
+        SurveyApp.out.displayNote("A date should be entered in the following format: " + dateFormat);
+        SurveyApp.out.displayNote("Please give " + numResponses + " dates.");
     }
 }
