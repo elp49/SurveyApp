@@ -7,6 +7,12 @@ import java.util.List;
 public interface SurveyOutputWriter {
     void displayNote(String note);
 
+    void displayNote(String note, boolean isInline);
+
+    void displayNote(String[] note);
+
+    void displayNote(String[] note, boolean isInline);
+
     void displayMenu(String prompt, List<String> choices);
 
     void displayMenuPrompt(String prompt);
@@ -21,7 +27,11 @@ public interface SurveyOutputWriter {
 
     void displayQuestionChoiceList(ChoiceList choiceList);
 
+    void displayQuestionChoiceList(ChoiceList choiceList, boolean isInline);
+
     void displayQuestionChoiceSet(List<ChoiceList> choiceSet);
+
+    void displayQuestionChoiceSet(List<ChoiceList> choiceSet, boolean isInline);
 
     void displayQuestionResponse(String response);
 
