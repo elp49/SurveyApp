@@ -33,7 +33,9 @@ public class DateQuestion extends ShortAnswerQuestion {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("A date should be entered in the following format: " + dateFormat);
-        SurveyApp.out.displayNote("Please give " + numResponses + " dates.");
+        SurveyApp.out.displayNote(new String[]{
+                "A date should be entered in the following format: " + dateFormat,
+                "Please give " + numResponses + " date(s)."
+        }, true);
     }
 }

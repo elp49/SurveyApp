@@ -5,5 +5,5 @@ public interface OutputWriter {
 
     void println(String s);
 
-    String getLineSeparator();
+    String lineSeparator();
 }

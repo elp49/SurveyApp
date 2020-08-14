@@ -6,7 +6,7 @@ import java.util.List;
 
 public class ChoiceList implements Serializable {
     private static long serialVersionUID = 1L;
-    private List<String> choices;
+    private final List<String> choices;
 
     public ChoiceList() {
         choices = new ArrayList<>();
@@ -30,5 +30,13 @@ public class ChoiceList implements Serializable {
 
     public String get(int i) {
         return choices.get(i);
+    }
+
+    public int indexOf(String choice) {
+        return choices.indexOf(choice);
+    }
+
+    public String set(int index, String choice) {
+        return choices.set(index, choice);
     }
 }

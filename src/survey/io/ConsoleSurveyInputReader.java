@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class ConsoleSurveyInputReader implements SurveyInputReader {
-    private InputReader in;
+    private final InputReader in;
 
     public ConsoleSurveyInputReader() {
         in = new ConsoleInputReader();

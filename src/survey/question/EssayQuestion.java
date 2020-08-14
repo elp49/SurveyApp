@@ -25,6 +25,16 @@ public class EssayQuestion extends Question {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Please give " + numResponses + " responses.");
+        SurveyApp.out.displayNote("Please give " + numResponses + " response(s).", true);
+    }
+
+    @Override
+    public void modify() {
+        // Modify the question prompt. If return value is true,
+        // then user chose to return to the previous menu.
+        boolean isReturn = modifyPrompt();
+
+        // Test return value.
+        if (!isReturn) modifyNumResponses();
     }
 }

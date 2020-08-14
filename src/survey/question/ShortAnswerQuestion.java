@@ -32,7 +32,9 @@ public class ShortAnswerQuestion extends EssayQuestion {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Limit your response to " + responseCharLimit + " characters.");
-        SurveyApp.out.displayNote("Please give " + numResponses + " answers.");
+        SurveyApp.out.displayNote(new String[]{
+                "Limit your answer(s) to " + responseCharLimit + " characters.",
+                "Please give " + numResponses + " answer(s)."
+        }, true);
     }
 }

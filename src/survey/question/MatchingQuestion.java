@@ -1,5 +1,6 @@
 package survey.question;
 
+import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
 
 import java.util.ArrayList;
@@ -98,6 +99,70 @@ public class MatchingQuestion extends Question {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
+        SurveyApp.out.displayQuestionChoiceSet(choiceSet, true);
+    }
+
+    @Override
+    public void modify() {
+        // Modify the question prompt. If return value is true,
+        // then user chose to return to the previous menu.
+        boolean isReturn = modifyPrompt();
+
+        // Test return value.
+        if (!isReturn) modifyChoices();
+    }
+
+    protected boolean modifyChoices() {
+        int choiceListIndex, choiceIndex, i;
+        String newChoice;
+        boolean isReturn = false;
+        List<String> choiceList;
+        List<String> options = new ArrayList<>();
+
+        // Determine if user will modify question choices.
+        String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
+
+        // Display choice set.
         SurveyApp.out.displayQuestionChoiceSet(choiceSet);
+
+        switch (choice) {
+            case ModifyQuestionMenu.YES:
+
+                // Create list of possible columns to be modified.
+                for (i = 1; i <= choiceSet.size(); i++)
+                    options.add("Column #" + i);
+
+                // Get choice list to be modified.
+                choice = SurveyApp.getUserMenuChoice("Which column of choices do you want to modify?", options);
+
+                // Get index of choice in options list.
+                choiceListIndex = options.indexOf(choice);
+
+                // Get choice to be modified from chosen choice list.
+                choiceList = choiceSet.get(choiceListIndex).getChoices();
+                choice = SurveyApp.getUserMenuChoice("Which choices do you want to modify in column #" + (choiceListIndex + 1) + "?", choiceList);
+
+                // Get index of choice in choice list.
+                choiceIndex = choiceList.indexOf(choice);
+
+                // Get valid new question choice.
+                SurveyApp.out.displayMenuPrompt("Enter the new choice:");
+                newChoice = getValidChoice();
+
+                // Set the new choice in chosen choice list.
+                choiceSet.get(choiceListIndex).set(choiceIndex, newChoice);
+
+                break;
+
+            case ModifyQuestionMenu.RETURN:
+
+                isReturn = true;
+                break;
+
+            default:
+                break;
+        }
+
+        return isReturn;
     }
 }

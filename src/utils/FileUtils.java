@@ -18,6 +18,26 @@ import java.util.List;
  * Taken from Sean Grimes, sean@seanpgrimes.com
  */
 public class FileUtils {
+    public static List<String> parseAllFilenames(List<String> allFilePaths) {
+        List<String> allFilenames = new ArrayList<>();
+
+        // Add each filename to list.
+        for (String s : allFilePaths)
+            allFilenames.add(parseFilename(s));
+
+        // Return all filenames.
+        return allFilenames;
+    }
+
+    public static String parseFilename(String filePath) {
+        // Get indices of filename substring.
+        int beginIndex = filePath.lastIndexOf(File.separator) + 1;
+        int endIndex = filePath.length();
+
+        // Return filename.
+        return filePath.substring(beginIndex, endIndex);
+    }
+
     /**
      * Append data to an existing file
      *
@@ -66,9 +86,11 @@ public class FileUtils {
     public static List<String> readLineByLine(String filePath) {
         List<String> lines = new ArrayList<>();
         BufferedReader br = null;
+
         try {
             br = Files.newBufferedReader(Paths.get(filePath));
             String line = br.readLine();
+
             while (line != null) {
                 lines.add(line);
                 line = br.readLine();
@@ -95,6 +117,7 @@ public class FileUtils {
      */
     public static boolean createDirectory(String directoryPath) {
         File dir = new File(directoryPath);
+
         // Nothing exists here, create the directory and all parent directories
         if (!dir.exists())
             return dir.mkdirs();
@@ -113,12 +136,15 @@ public class FileUtils {
     public static List<String> getAllFilePathsInDir(String path) {
         List<String> paths = new ArrayList<>();
         File[] files = new File(path).listFiles();
+
         if (files == null || files.length == 0)
             throw new IllegalStateException(path + " is empty");
+
         for (File f : files) {
             if (f.isFile())
                 paths.add(f.getAbsolutePath());
         }
+
         return sortPaths(paths);
     }
 
@@ -131,12 +157,15 @@ public class FileUtils {
     public static List<String> getAllFilenamesInDir(String path) {
         List<String> result = new ArrayList<>();
         File[] files = new File(path).listFiles();
+
         if (files == null || files.length == 0)
             throw new IllegalStateException(path + " is empty");
+
         for (File f : files) {
             if (f.isFile())
                 result.add(f.getName());
         }
+
         return sortPaths(result);
     }
 
@@ -149,8 +178,10 @@ public class FileUtils {
     private static List<String> sortPaths(List<String> paths) {
         if (paths.isEmpty()) return Collections.emptyList();
         if (paths.size() == 1) return paths;
+
         Comparator<String> comp = Comparator.comparing((String x) -> x);
         paths.sort(comp);
+
         return paths;
     }
 

@@ -13,7 +13,7 @@ public class ConsoleOutputWriter implements OutputWriter {
         System.out.println(s);
     }
 
-    public String getLineSeparator() {
+    public String lineSeparator() {
         return System.lineSeparator();
     }
 }

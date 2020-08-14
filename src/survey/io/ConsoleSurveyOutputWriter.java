@@ -7,7 +7,7 @@ import utils.OutputWriter;
 import java.util.List;
 
 public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
-    private OutputWriter out;
+    private final OutputWriter out;
 
     public ConsoleSurveyOutputWriter() {
         out = new ConsoleOutputWriter();
@@ -21,12 +21,43 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         out.println(s);
     }
 
-    private String getLineSeparator() {
-        return out.getLineSeparator();
+    private String lineSeparator() {
+        return out.lineSeparator();
     }
 
     public void displayNote(String note) {
-        println(getLineSeparator() + note);
+        displayNote(note, false);
+    }
+
+    public void displayNote(String note, boolean isInline) {
+        String line = "";
+
+        // Test if is inline note.
+        if (!isInline) line += lineSeparator();
+
+        // Append note.
+        line += note;
+
+        println(line);
+    }
+
+    public void displayNote(String[] note) {
+        displayNote(note, false);
+    }
+
+    public void displayNote(String[] note, boolean isInline) {
+        StringBuilder sb = new StringBuilder();
+        String ls = lineSeparator();
+
+        // Test if is inline notes.
+        if (!isInline) sb.append(ls);
+
+        // Append notes.
+        for (String s : note)
+            sb.append(s).append(ls);
+
+        // Print notes.
+        print(sb.toString());
     }
 
     public void displayMenu(String prompt, List<String> choices) {
@@ -35,7 +66,7 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
     }
 
     public void displayMenuPrompt(String prompt) {
-        println(getLineSeparator() + prompt);
+        println(lineSeparator() + prompt);
     }
 
     public void displayMenuOptions(List<String> options) {
@@ -49,8 +80,6 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         }
     }
 
-    //TODO: decide if should remove this method and dynamically create a menu with survey names as options.
-    // and then use abody display menu function instead.
     public void displayAllSurveyNames(List<String> names) {
         int i;
         String line;
@@ -66,52 +95,81 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
     }
 
     public void displayQuestionPrompt(String prompt) {
-        println(prompt);
+        String ls = lineSeparator();
+        println(ls + ls + prompt);
     }
 
     public void displayQuestionChoiceList(ChoiceList choiceList) {
-        int i = 0;
+        displayQuestionChoiceList(choiceList, false);
+    }
+
+    public void displayQuestionChoiceList(ChoiceList choiceList, boolean isInline) {
+        int i;
+        String choice;
         char choiceChar = 'A';
         StringBuilder sb = new StringBuilder();
+        String ls = lineSeparator();
 
-        for (String c : choiceList.getChoices()) {
-            // Print a new line after every four choices.
-            if (i % 4 == 0) {
-                println(sb.toString());
-                sb = new StringBuilder();
+        // If not inline, then append line separator.
+        if (!isInline) sb.append(ls);
+
+        for (i = 0; i < choiceList.size(); i++) {
+            // Get choice.
+            choice = choiceList.get(i);
+
+            // Append a line separator after every four choices.
+            if ((i + 1) % 5 == 0) {
+                sb.append(ls);
             }
 
-            // Print choice string.
-            sb.append(choiceChar).append(") ").append(c).append("\t");
+            // Append choice string.
+            sb.append(choiceChar).append(") ").append(choice).append("  \t");
 
             choiceChar++;
-            i++;
         }
 
-        // Print any leftover choices.
-        if (sb.length() > 0) println(sb.toString());
+        // Print choices.
+        println(sb.toString());
     }
 
     public void displayQuestionChoiceSet(List<ChoiceList> choiceSet) {
-        int i;
+        displayQuestionChoiceSet(choiceSet, false);
+    }
+
+    public void displayQuestionChoiceSet(List<ChoiceList> choiceSet, boolean isInline) {
+        int i, j;
+        String choice;
         char choiceChar = 'A';
         int choiceNum = 1;
         int size = getLargestChoiceListSize(choiceSet);
         StringBuilder sb = new StringBuilder();
+        String ls = lineSeparator();
+
+        // If not inline, then append line separator.
+        if (!isInline) sb.append(ls);
 
         for (i = 0; i < size; i++) {
-            for (ChoiceList cl : choiceSet) {
+            for (j = 0; j < choiceSet.size(); j++) {
+                // Get choice.
+                choice = choiceSet.get(j).get(i);
+
                 // Append choice indent mark.
-                if (i % 2 == 0) sb.append(choiceChar);
-                else sb.append(choiceNum);
+                if ((j + 1) % 2 == 0) sb.append(choiceNum);
+                else sb.append(choiceChar);
 
                 // Append choice.
-                sb.append(") ").append(cl.get(i)).append("\t");
+                sb.append(") ").append(choice).append("  \t");
             }
 
-            println(sb.toString());
-            sb = new StringBuilder();
+            // Append a new line after each set.
+            sb.append(ls);
+
+            choiceChar++;
+            choiceNum++;
         }
+
+        // Print choices.
+        println(sb.toString());
     }
 
     private int getLargestChoiceListSize(List<ChoiceList> choiceSet) {

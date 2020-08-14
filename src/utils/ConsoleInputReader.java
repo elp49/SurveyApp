@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class ConsoleInputReader implements InputReader {
-    private BufferedReader reader;
+    private final BufferedReader reader;
 
     public ConsoleInputReader() {
         reader = new BufferedReader(new InputStreamReader(System.in));
@@ -21,13 +21,11 @@ public class ConsoleInputReader implements InputReader {
     }
 
     private Integer parseInteger(String s) {
-        Integer result;
+        Integer result = null;
 
         try {
             result = Integer.parseInt(s);
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            result = null;
+        } catch (NumberFormatException ignore) {
         }
 
         return result;
