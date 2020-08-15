@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValidDateQuestion extends ShortAnswerQuestion {
-    private String prompt;
     private int numResponses;
     protected final String MONTH_FORMAT = "MM";
     protected final String DAY_FORMAT = "DD";

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EssayQuestion extends Question {
-    private String prompt;
     private int numResponses;
 
     public EssayQuestion() {

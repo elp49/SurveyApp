@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MultipleChoiceQuestion extends Question {
-    private String prompt;
     private int numResponses;
     private int numChoices;
     private ChoiceList choiceList;

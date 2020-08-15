@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ShortAnswerQuestion extends EssayQuestion {
-    private String prompt;
     private int numResponses;
     private final int responseCharLimit = 64;
 

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TrueFalseQuestion extends MultipleChoiceQuestion {
-    private String prompt;
     private final int numResponses;
     private final ChoiceList choiceList = new ChoiceList(new ArrayList<>() {
         {
