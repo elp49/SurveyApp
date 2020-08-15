@@ -102,7 +102,27 @@ public class SurveyApp {
             out.displayMenu(prompt, options);
 
             // Get user menu choice.
-            choice = in.readValidMenuChoice(options, -1);
+            choice = in.readValidMenuChoice(options);
+
+            // Test for null or empty string.
+            if (isNullOrEmpty = isNullOrEmpty(choice)) {
+                displayInvalidInputMessage("choice");
+            }
+        } while (isNullOrEmpty);
+
+        return choice;
+    }
+
+    public static String getUserMenuChoice(String[] prompt, List<String> options) {
+        String choice;
+        boolean isNullOrEmpty;
+
+        do {
+            // Display menu.
+            out.displayMenu(prompt, options);
+
+            // Get user menu choice.
+            choice = in.readValidMenuChoice(options);
 
             // Test for null or empty string.
             if (isNullOrEmpty = isNullOrEmpty(choice)) {

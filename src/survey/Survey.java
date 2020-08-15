@@ -4,6 +4,8 @@ import menu.CreateQuestionMenu;
 import menu.DeleteMenu;
 import menu.Menu;
 import survey.question.Question;
+import survey.response.QuestionResponse;
+import survey.response.SurveyResponse;
 import utils.FileConfiguration;
 import utils.FileUtils;
 import utils.SerializationHelper;
@@ -20,7 +22,6 @@ public class Survey implements Serializable {
     protected String name;
     protected final QuestionFactory questionFactory;
     protected final List<Question> questionList;
-    /*private SurveyResponse response;*/
 
     public Survey(QuestionFactory questionFactory) {
         this.questionFactory = questionFactory;
@@ -29,10 +30,6 @@ public class Survey implements Serializable {
 
     public String getName() {
         return name;
-    }
-
-    public List<Question> getQuestionList() {
-        return questionList;
     }
 
     public void create() {
@@ -112,8 +109,8 @@ public class Survey implements Serializable {
         // Create survey name.
         if (SurveyApp.isNullOrEmpty(name)) name = createSurveyName();
 
-        // Try to serialize survey to file on disk.
         try {
+            // Try to serialize survey to file on disk.
             Survey.serialize(this);
             SurveyApp.out.displayNote("Saved successfully.");
         } catch (Exception e) {
@@ -123,10 +120,37 @@ public class Survey implements Serializable {
     }
 
     public void take() {
+        String questionType;
+        List<String> responseList;
+
+        // Create survey response object.
+        SurveyResponse surveyResponse = new SurveyResponse(name);
+
+        // Create survey name.
+        if (SurveyApp.isNullOrEmpty(name)) name = createSurveyName();
+
+        // Display survey name.
+        SurveyApp.out.displaySurveyName(name);
+
+        // Loop through each question.
+        for (Question q : questionList) {
+            // Get question type;
+            questionType = q.getQuestionType();
+
+            // Display question.
+            q.display();
+
+            // Record valid question response.
+            responseList = q.getValidResponseList();
+
+            // Add question response to survey response list.
+            surveyResponse.add(new QuestionResponse(questionType, responseList));
+        }
+
+        // Save response.
+        surveyResponse.save();
     }
 
-    //TODO: I've done this a few times now. create a method in SurveyApp or Menu to automate.
-    // it should also append the return option.
     public void modify() {
         String choice;
         boolean isReturn;
@@ -134,17 +158,19 @@ public class Survey implements Serializable {
         List<String> options = new ArrayList<>();
 
         if (!questionList.isEmpty()) {
-            // Add each question's type to options list.
-            for (Question q : questionList)
-                options.add(q.getQuestionType());
-
-            // Append return option.
-            options.add(Menu.RETURN);
-
             do {
+                // Add each question's type to options list.
+                for (Question q : questionList)
+                    options.add("Type: " + q.getQuestionType() + ",  Prompt: " + q.getPrompt());
+
+                // Append return option.
+                options.add(Menu.RETURN);
+
                 // Get user chosen question.
-                SurveyApp.out.displayNote("Below is the list of questions you have created.");
-                choice = SurveyApp.getUserMenuChoice("Which question do you wish to modify?", options);
+                choice = SurveyApp.getUserMenuChoice(new String[]{
+                        "Which question do you wish to modify?",
+                        "Below is the list of questions you have created."
+                }, options);
 
                 if (!(isReturn = choice.equals(Menu.RETURN))) {
                     index = options.indexOf(choice);
@@ -165,14 +191,19 @@ public class Survey implements Serializable {
         String choice;
         String result = null;
         boolean isNullOrEmpty = false;
+        List<String> allSurveyPaths = null;
 
-        // Get all survey file paths.
-        List<String> allSurveyPaths = Survey.getAllSurveyFilePaths();
+        try {
+            // Try to get all survey file paths.
+            allSurveyPaths = Survey.getAllSurveyFilePaths();
+        } catch (IllegalStateException ignore) {
+            SurveyApp.out.displayNote("You have not saved any surveys yet.");
+        }
 
-        // Add the option to return to previous menu.
-        allSurveyPaths.add(Menu.RETURN);
+        if (allSurveyPaths != null && !allSurveyPaths.isEmpty()) {
+            // Add the option to return to previous menu.
+            allSurveyPaths.add(Menu.RETURN);
 
-        if (!allSurveyPaths.isEmpty()) {
             // Get all survey filenames.
             List<String> allSurveyNames = FileUtils.parseAllFilenames(allSurveyPaths);
 
@@ -183,8 +214,6 @@ public class Survey implements Serializable {
                 // Get survey path from list.
                 result = allSurveyPaths.get(allSurveyNames.indexOf(choice));
             }
-        } else {
-            SurveyApp.out.displayNote("You have not saved any surveys yet.");
         }
 
         return result;
@@ -229,34 +258,40 @@ public class Survey implements Serializable {
     protected int findNextSmallestSurveyNumber() {
         Integer num;
         boolean foundNumber;
+        List<String> allSurveyNames = null;
 
         // The number to follow survey's name.
         Integer surveyNumber = 1;
 
-        // Get the names of all surveys.
-        List<String> allSurveyNames = getAllSurveyNames();
+        try {
+            // Try to get the names of all surveys.
+            allSurveyNames = getAllSurveyNames();
+        } catch (IllegalStateException ignore) {
+        }
 
-        // Find the next smallest survey number.
-        do {
-            // Assume we already found the next smallest number.
-            foundNumber = true;
-            for (String s : allSurveyNames) {
-                // Try to parse survey number from name.
-                num = parseSurveyNumber(s);
+        if (allSurveyNames != null && !allSurveyNames.isEmpty()) {
+            // Find the next smallest survey number.
+            do {
+                // Assume we already found the next smallest number.
+                foundNumber = true;
+                for (String s : allSurveyNames) {
+                    // Try to parse survey number from name.
+                    num = parseSurveyNumber(s);
 
-                if (num != null) {
-                    // If this number is already taken, increment and try again.
-                    if (num.equals(surveyNumber)) {
-                        foundNumber = false;
-                        surveyNumber++;
-                        break;
+                    if (num != null) {
+                        // If this number is already taken, increment and try again.
+                        if (num.equals(surveyNumber)) {
+                            foundNumber = false;
+                            surveyNumber++;
+                            break;
+                        }
                     }
                 }
-            }
 
-            // If foundNumber is still true by the time it gets here,
-            // then no other survey has taken the number it.
-        } while (!foundNumber);
+                // If foundNumber is still true by the time it gets here,
+                // then no other survey has taken the number it.
+            } while (!foundNumber);
+        }
 
         return surveyNumber;
     }
@@ -283,8 +318,6 @@ public class Survey implements Serializable {
         return result;
     }
 
-
-
     /* *********************************************************************** */
     /*                  SERIALIZATION   &   DESERIALIZATION                    */
     /* *********************************************************************** */
@@ -297,21 +330,6 @@ public class Survey implements Serializable {
     public static String serialize(Survey survey) {
         // Serialize the survey to disk using the existing helper function
         return SerializationHelper.serialize(Survey.class, survey, basePath, survey.getName());
-    }
-
-    /**
-     * Deserializes a specific survey. The user will be presented with available Surveys to
-     * deserialize.
-     *
-     * @return The deserialized Survey
-     */
-    public static Survey deserialize() throws IOException, ClassNotFoundException {
-        // Use the existing utility function to allow the user to pick the survey from a
-        // list of existing serialized surveys
-        String selectedSurvey = FileUtils.listAndPickFileFromDir(basePath);
-
-        // Use the existing deserialization function to handle it from here
-        return deserialize(selectedSurvey);
     }
 
     /**
@@ -340,21 +358,6 @@ public class Survey implements Serializable {
      */
     public static List<String> getAllSurveyFilePaths() {
         return FileUtils.getAllFilePathsInDir(basePath);
-    }
-
-    /**
-     * Deserializes all available Surveys that are currently stored on disk in a List
-     *
-     * @return List<Survey> for all available surveys. This can be empty.
-     */
-    public static List<Survey> deserializeAllSurveys() throws IOException, ClassNotFoundException {
-        List<Survey> allSurveys = new ArrayList<>();
-        List<String> allPaths = FileUtils.getAllFilePathsInDir(basePath);
-
-        for (String path : allPaths)
-            allSurveys.add(deserialize(path));
-
-        return allSurveys;
     }
 
     /**

@@ -32,10 +32,6 @@ public class ChoiceList implements Serializable {
         return choices.get(i);
     }
 
-    public int indexOf(String choice) {
-        return choices.indexOf(choice);
-    }
-
     public String set(int index, String choice) {
         return choices.set(index, choice);
     }

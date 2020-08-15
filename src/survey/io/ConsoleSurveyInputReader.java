@@ -17,7 +17,7 @@ public class ConsoleSurveyInputReader implements SurveyInputReader {
         String line;
 
         try {
-            line = in.readln();
+            line = in.readln().trim();
         } catch (IOException e) {
             e.printStackTrace();
             line = null;
@@ -44,10 +44,6 @@ public class ConsoleSurveyInputReader implements SurveyInputReader {
     }
 
     public String readValidMenuChoice(List<String> options) {
-        return readValidMenuChoice(options, 0);
-    }
-
-    public String readValidMenuChoice(List<String> options, int offset) {
         Integer choiceNum;
         String choiceStr = "";
 
@@ -57,7 +53,7 @@ public class ConsoleSurveyInputReader implements SurveyInputReader {
             if (choiceNum != null) {
                 try {
                     // Get choice string.
-                    choiceStr = options.get(choiceNum + offset);
+                    choiceStr = options.get(choiceNum - 1);
                 } catch (IndexOutOfBoundsException ignored) {
                 }
             }

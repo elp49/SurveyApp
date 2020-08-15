@@ -4,6 +4,7 @@ import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
 
 import java.io.Serializable;
+import java.util.List;
 
 public abstract class Question implements Serializable {
     private static long serialVersionUID = 1L;
@@ -24,6 +25,10 @@ public abstract class Question implements Serializable {
     }
 
     public abstract String getQuestionType();
+
+    public String getResponseType() {
+        return "responses";
+    }
 
     public abstract void create();
 
@@ -49,19 +54,12 @@ public abstract class Question implements Serializable {
     }
 
     protected int getValidNumResponses() {
-        return getValidNumResponses("responses");
-    }
-
-    protected int getValidNumResponses(String responseType) {
         Integer numResponses;
         boolean isValidNumResponses;
 
-        // Get question type.
-        String questionType = getQuestionType();
-
         do {
             // Record number of question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of " + responseType + " for your " + questionType + " question.");
+            SurveyApp.out.displayMenuPrompt("Enter the number of " + getResponseType() + " for your " + getQuestionType() + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.
@@ -180,4 +178,6 @@ public abstract class Question implements Serializable {
 
         return isReturn;
     }
+
+    public abstract List<String> getValidResponseList();
 }

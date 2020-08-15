@@ -28,7 +28,7 @@ public class QuestionFactory implements Serializable {
                 q = new EssayQuestion();
                 break;
             case CreateQuestionMenu.DATE:
-                q = new DateQuestion();
+                q = new ValidDateQuestion();
                 break;
             case CreateQuestionMenu.MATCHING:
                 q = new MatchingQuestion();

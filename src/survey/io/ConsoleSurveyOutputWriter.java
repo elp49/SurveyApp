@@ -65,8 +65,25 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         displayMenuOptions(choices);
     }
 
+    public void displayMenu(String[] prompt, List<String> choices) {
+        displayMenuPrompt(prompt);
+        displayMenuOptions(choices);
+    }
+
     public void displayMenuPrompt(String prompt) {
         println(lineSeparator() + prompt);
+    }
+
+    public void displayMenuPrompt(String[] prompt) {
+        String ls = lineSeparator();
+        StringBuilder sb = new StringBuilder();
+
+        // Append each line in prompt.
+        for (String s : prompt)
+            sb.append(ls).append(s);
+
+        // Print prompt.
+        println(sb.toString());
     }
 
     public void displayMenuOptions(List<String> options) {
@@ -78,20 +95,6 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
             line = i + ") " + options.get(i - 1);
             println(line);
         }
-    }
-
-    public void displayAllSurveyNames(List<String> names) {
-        int i;
-        String line;
-
-        for (i = 1; i <= names.size(); i++) {
-            line = i + ") " + names.get(i - 1);
-            println(line);
-        }
-    }
-
-    public void displaySurvey(String survey) {
-        println(survey);
     }
 
     public void displayQuestionPrompt(String prompt) {
@@ -182,6 +185,10 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         }
 
         return max;
+    }
+
+    public void displaySurveyName(String surveyName) {
+        println(lineSeparator() + surveyName);
     }
 
     public void displayQuestionResponse(String response) {

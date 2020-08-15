@@ -4,7 +4,7 @@ import java.io.File;
 
 /**
  * File input/output configurations.
- * <p>
+ *
  * Taken from Sean Grimes, sean@seanpgrimes.com
  */
 public class FileConfiguration {

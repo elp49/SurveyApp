@@ -5,7 +5,7 @@ import java.io.*;
 /**
  * Provides the capability to serialize and deserialize objects which
  * have implemented the serializable interface.
- * <p>
+ *
  * Taken from Sean Grimes, sean@seanpgrimes.com
  */
 public class SerializationHelper {

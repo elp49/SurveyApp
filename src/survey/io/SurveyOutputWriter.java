@@ -15,13 +15,13 @@ public interface SurveyOutputWriter {
 
     void displayMenu(String prompt, List<String> choices);
 
+    void displayMenu(String[] prompt, List<String> choices);
+
     void displayMenuPrompt(String prompt);
 
+    void displayMenuPrompt(String[] prompt);
+
     void displayMenuOptions(List<String> options);
-
-    void displayAllSurveyNames(List<String> names);
-
-    void displaySurvey(String survey);
 
     void displayQuestionPrompt(String prompt);
 
@@ -32,6 +32,8 @@ public interface SurveyOutputWriter {
     void displayQuestionChoiceSet(List<ChoiceList> choiceSet);
 
     void displayQuestionChoiceSet(List<ChoiceList> choiceSet, boolean isInline);
+
+    void displaySurveyName(String surveyName);
 
     void displayQuestionResponse(String response);
 

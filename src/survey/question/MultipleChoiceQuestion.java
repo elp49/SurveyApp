@@ -7,8 +7,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MultipleChoiceQuestion extends Question {
-    protected int numChoices;
-    protected ChoiceList choiceList;
+    private String prompt;
+    private int numResponses;
+    private int numChoices;
+    private ChoiceList choiceList;
 
     public MultipleChoiceQuestion() {
         super();
@@ -23,6 +25,11 @@ public class MultipleChoiceQuestion extends Question {
     @Override
     public String getQuestionType() {
         return "Multiple Choice";
+    }
+
+    @Override
+    public String getResponseType() {
+        return "choice(s)";
     }
 
     @Override
@@ -114,7 +121,7 @@ public class MultipleChoiceQuestion extends Question {
 
         do {
             // Record number of survey.question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of allowed responses for your " + questionType + " question.");
+            SurveyApp.out.displayMenuPrompt("Enter the number of allowed " + getResponseType() + " for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.
@@ -153,45 +160,6 @@ public class MultipleChoiceQuestion extends Question {
 
         // Test return value.
         if (!isReturn) modifyChoices();
-    }
-
-    protected boolean modifyChoices() {
-        int choiceIndex;
-        String newChoice;
-        boolean isReturn = false;
-
-        // Determine if user will modify question choices.
-        String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
-
-        switch (choice) {
-            case ModifyQuestionMenu.YES:
-
-                // Display choice list and get choice to be modified.
-                SurveyApp.out.displayMenuPrompt("Which choice do you want to modify?");
-                SurveyApp.out.displayQuestionChoiceList(choiceList);
-                choice = getValidUserChoice();
-
-                // Get index of choice in choice list.
-                choiceIndex = choiceList.indexOf(choice);
-
-                // Get valid new question choice.
-                SurveyApp.out.displayMenuPrompt("Enter the new choice:");
-                newChoice = getValidChoice();
-
-                choiceList.set(choiceIndex, newChoice);
-
-                break;
-
-            case ModifyQuestionMenu.RETURN:
-
-                isReturn = true;
-                break;
-
-            default:
-                break;
-        }
-
-        return isReturn;
     }
 
     protected boolean modifyNumResponses(String responseType) {
@@ -238,15 +206,52 @@ public class MultipleChoiceQuestion extends Question {
         return isReturn;
     }
 
-    //TODO: Should this method be in ConsoleSurveyInputReader?
+    protected boolean modifyChoices() {
+        int choiceIndex;
+        String newChoice;
+        boolean isReturn = false;
+
+        // Determine if user will modify question choices.
+        String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
+
+        switch (choice) {
+            case ModifyQuestionMenu.YES:
+
+                // Display choice list.
+                SurveyApp.out.displayMenuPrompt("Which choice do you want to modify?");
+                SurveyApp.out.displayQuestionChoiceList(choiceList);
+
+                // Get index of choice in choice list to be modified.
+                choiceIndex = getValidUserChoiceIndex();
+
+                // Get valid new question choice.
+                SurveyApp.out.displayMenuPrompt("Enter the new choice:");
+                newChoice = getValidChoice();
+
+                // Update choice list with modified choice.
+                choiceList.set(choiceIndex, newChoice);
+
+                break;
+
+            case ModifyQuestionMenu.RETURN:
+
+                isReturn = true;
+                break;
+
+            default:
+                break;
+        }
+
+        return isReturn;
+    }
 
     /**
      * Get a valid user choice from choice list.
      *
      * @return the valid user choice.
      */
-    protected String getValidUserChoice() {
-        String choice;
+    protected int getValidUserChoiceIndex() {
+        String choiceChar;
         boolean isValidUserChoice;
         int choiceCharIndex, choiceIndex;
 
@@ -254,24 +259,24 @@ public class MultipleChoiceQuestion extends Question {
         List<String> choiceChars = getPossibleChoiceCharacters();
 
         do {
-            // Record choice.
-            choice = SurveyApp.in.readQuestionChoice();
+            // Record choice character.
+            choiceChar = SurveyApp.in.readQuestionChoice();
 
             // Check if valid choice.
-            if (!(isValidUserChoice = isValidUserChoice(choice, choiceChars))) {
+            if (!(isValidUserChoice = isValidUserChoice(choiceChar, choiceChars))) {
                 SurveyApp.displayInvalidInputMessage("choice");
             }
         } while (!isValidUserChoice);
 
         // Get index of the choice character.
-        choiceCharIndex = choiceChars.indexOf(choice);
+        choiceCharIndex = choiceChars.indexOf(choiceChar);
 
         // Divide by 2 to get the index of the choice in choice list.
         if (choiceCharIndex == 0) choiceIndex = 0;
         else choiceIndex = choiceCharIndex / 2;
 
-        // Return chosen choice from choice list.
-        return choiceList.get(choiceIndex);
+        // Return chosen choice index.
+        return choiceIndex;
     }
 
     protected List<String> getPossibleChoiceCharacters() {
@@ -297,8 +302,26 @@ public class MultipleChoiceQuestion extends Question {
 
         // Test choice for null or empty string.
         // Test choiceChars if contains choice.
-        if ((!SurveyApp.isNullOrEmpty(choice))) isValidUserChoice = choiceChars.contains(choice);
+        if ((!SurveyApp.isNullOrEmpty(choice)))
+            isValidUserChoice = choiceChars.contains(choice);
 
         return isValidUserChoice;
+    }
+
+    @Override
+    public List<String> getValidResponseList() {
+        int choiceIndex, i;
+        List<String> responseList = new ArrayList<>();
+
+        // Loop until user gives valid choice(s).
+        for (i = 0; i < numResponses; i++) {
+            // Get index of choice in choice list.
+            choiceIndex = getValidUserChoiceIndex();
+
+            // Add choice to response list.
+            responseList.add(choiceList.get(choiceIndex));
+        }
+
+        return responseList;
     }
 }
