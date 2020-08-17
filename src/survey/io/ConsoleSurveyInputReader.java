@@ -2,6 +2,7 @@ package survey.io;
 
 import utils.ConsoleInputReader;
 import utils.InputReader;
+import utils.Validation;
 
 import java.io.IOException;
 import java.util.List;
@@ -39,15 +40,11 @@ public class ConsoleSurveyInputReader implements SurveyInputReader {
         return num;
     }
 
-    private boolean isNullOrEmpty(List<String> list) {
-        return list == null || list.isEmpty();
-    }
-
     public String readValidMenuChoice(List<String> options) {
         Integer choiceNum;
         String choiceStr = "";
 
-        if (!isNullOrEmpty(options)) {
+        if (!Validation.isNullOrEmpty(options)) {
             // Get user menu choice.
             choiceNum = readMenuChoice();
             if (choiceNum != null) {

@@ -5,6 +5,7 @@ import survey.io.ConsoleSurveyInputReader;
 import survey.io.ConsoleSurveyOutputWriter;
 import survey.io.SurveyInputReader;
 import survey.io.SurveyOutputWriter;
+import utils.Validation;
 
 import java.util.List;
 
@@ -40,7 +41,12 @@ public class SurveyApp {
 
                     // Test survey for null.
                     survey = new Survey(new QuestionFactory());
-                    survey.create();
+                    try {
+                        survey.create();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        out.displayNote("There was an error while creating your survey.");
+                    }
 
                     break;
 
@@ -48,14 +54,28 @@ public class SurveyApp {
 
                     // Test survey for null.
                     if (survey == null) displayNoSurveyLoadedMessage("display");
-                    else survey.display();
+                    else {
+                        try {
+                            survey.display();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            out.displayNote("There was an error while displaying your survey.");
+                        }
+                    }
 
                     break;
 
                 case MainMenu.LOAD_SURVEY:
 
-                    // Load a survey.
-                    Survey s = Survey.load();
+                    Survey s = null;
+
+                    try {
+                        // Load a survey.
+                        s = Survey.load();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        out.displayNote("There was an error while loading your survey.");
+                    }
 
                     // Test survey for null.
                     if (s != null) survey = s;
@@ -66,7 +86,14 @@ public class SurveyApp {
 
                     // Test survey for null.
                     if (survey == null) displayNoSurveyLoadedMessage("save");
-                    else survey.save();
+                    else {
+                        try {
+                            survey.save();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            out.displayNote("There was an error while saving your survey.");
+                        }
+                    }
 
                     break;
 
@@ -74,7 +101,14 @@ public class SurveyApp {
 
                     // Test survey for null.
                     if (survey == null) displayNoSurveyLoadedMessage("take");
-                    else survey.take();
+                    else {
+                        try {
+                            survey.take();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            out.displayNote("There was an error while taking your survey.");
+                        }
+                    }
 
                     break;
 
@@ -82,7 +116,14 @@ public class SurveyApp {
 
                     // Test survey for null.
                     if (survey == null) displayNoSurveyLoadedMessage("modify");
-                    else survey.modify();
+                    else {
+                        try {
+                            survey.modify();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            out.displayNote("There was an error while modifying your survey.");
+                        }
+                    }
 
                     break;
 
@@ -95,7 +136,7 @@ public class SurveyApp {
 
     public static String getUserMenuChoice(String prompt, List<String> options) {
         String choice;
-        boolean isNullOrEmpty;
+        boolean isNullOrBlank;
 
         do {
             // Display menu.
@@ -105,17 +146,17 @@ public class SurveyApp {
             choice = in.readValidMenuChoice(options);
 
             // Test for null or empty string.
-            if (isNullOrEmpty = isNullOrEmpty(choice)) {
+            if (isNullOrBlank = Validation.isNullOrBlank(choice)) {
                 displayInvalidInputMessage("choice");
             }
-        } while (isNullOrEmpty);
+        } while (isNullOrBlank);
 
         return choice;
     }
 
     public static String getUserMenuChoice(String[] prompt, List<String> options) {
         String choice;
-        boolean isNullOrEmpty;
+        boolean isNullOrBlank;
 
         do {
             // Display menu.
@@ -125,10 +166,10 @@ public class SurveyApp {
             choice = in.readValidMenuChoice(options);
 
             // Test for null or empty string.
-            if (isNullOrEmpty = isNullOrEmpty(choice)) {
+            if (isNullOrBlank = Validation.isNullOrBlank(choice)) {
                 displayInvalidInputMessage("choice");
             }
-        } while (isNullOrEmpty);
+        } while (isNullOrBlank);
 
         return choice;
     }
@@ -136,7 +177,7 @@ public class SurveyApp {
     public static void displayNoSurveyLoadedMessage(String action) {
         String message;
 
-        if (!isNullOrEmpty(action)) message = "You must have a survey loaded in order to " + action + " it.";
+        if (!Validation.isNullOrBlank(action)) message = "You must have a survey loaded in order to " + action + " it.";
         else message = "You must have a survey loaded.";
 
         out.displayNote(message);
@@ -144,9 +185,5 @@ public class SurveyApp {
 
     public static void displayInvalidInputMessage(String inputType) {
         out.displayNote("You entered an invalid " + inputType + ".");
-    }
-
-    public static boolean isNullOrEmpty(String s) {
-        return s == null || s.isEmpty();
     }
 }

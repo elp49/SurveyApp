@@ -1,15 +1,14 @@
 package survey.response;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QuestionResponse implements Serializable {
-    protected String questionType;
     protected final List<String> responseList;
 
-    public QuestionResponse(String questionType, List<String> responseList) {
-        this.questionType = questionType;
-        this.responseList = responseList;
+    public QuestionResponse() {
+        responseList = new ArrayList<>();
     }
 
     public boolean add(String s) {

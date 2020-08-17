@@ -1,26 +1,15 @@
 package survey.question;
 
 import survey.SurveyApp;
-
-import java.util.ArrayList;
-import java.util.List;
+import utils.Validation;
 
 public class ShortAnswerQuestion extends EssayQuestion {
-    private int numResponses;
     private final int responseCharLimit = 64;
 
     public ShortAnswerQuestion() {
         super();
-    }
-
-    @Override
-    public String getQuestionType() {
-        return "Short Answer";
-    }
-
-    @Override
-    public String getResponseType() {
-        return "answer(s)";
+        questionType = "Short Answer";
+        responseType = "answer";
     }
 
     @Override
@@ -36,14 +25,14 @@ public class ShortAnswerQuestion extends EssayQuestion {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote(new String[]{
-                "Limit your answer(s) to " + responseCharLimit + " characters.",
-                "Please give " + numResponses + " answer(s)."
-        }, true);
+        SurveyApp.out.displayQuestionPrompt(new String[]{
+                prompt,
+                "Limit your " + responseType + "(s) to " + responseCharLimit + " characters.",
+                "Please give " + numResponses + " " + responseType + "(s) ."
+        });
     }
 
-    @Override
+    /*@Override
     public List<String> getValidResponseList() {
         int i;
         String response, reason;
@@ -74,20 +63,28 @@ public class ShortAnswerQuestion extends EssayQuestion {
         }
 
         return responseList;
-    }
+    }*/
 
+
+    /**
+     * Determines if the question response is a valid short answer.
+     *
+     * @param response the short answer.
+     * @return true if the response is valid, otherwise false.
+     */
     @Override
-    protected String getReasonWhyResponseIsInvalid(String response) {
-        String reason = "";
+    protected boolean performResponseValidation(String response) {
+        boolean isValid;
 
-        // Test for null or empty string.
-        if (SurveyApp.isNullOrEmpty(response))
-            reason = "Your " + getResponseType() + " cannot be empty.";
+        // Test for null or blank string.
+        if (!(isValid = !Validation.isNullOrBlank(response)))
+            SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-            // Test for response length greater than limit.
-        else if (response.length() > responseCharLimit)
-            reason = "Your " + getResponseType() + " of " + response.length() + " characters exceeds the limit of " + responseCharLimit + ".";
+            // Test for response length below character limit.
+        else if (!(isValid = response.length() <= responseCharLimit))
+            SurveyApp.out.displayNote("Your " + responseType + " of " + response.length()
+                    + " characters exceeds the limit of " + responseCharLimit + ".");
 
-        return reason;
+        return isValid;
     }
 }

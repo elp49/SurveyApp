@@ -41,11 +41,11 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         println(line);
     }
 
-    public void displayNote(String[] note) {
-        displayNote(note, false);
+    public void displayAllNotes(String[] note) {
+        displayAllNotes(note, false);
     }
 
-    public void displayNote(String[] note, boolean isInline) {
+    public void displayAllNotes(String[] note, boolean isInline) {
         StringBuilder sb = new StringBuilder();
         String ls = lineSeparator();
 
@@ -100,6 +100,19 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
     public void displayQuestionPrompt(String prompt) {
         String ls = lineSeparator();
         println(ls + ls + prompt);
+    }
+
+    public void displayQuestionPrompt(String[] prompt) {
+        String ls = lineSeparator();
+
+        // Initialize string builder with two line separators.
+        StringBuilder sb = new StringBuilder(ls + ls);
+
+        // Append question prompt.
+        for (String s : prompt)
+            sb.append(s);
+
+        println(sb.toString());
     }
 
     public void displayQuestionChoiceList(ChoiceList choiceList) {

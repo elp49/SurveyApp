@@ -3,34 +3,21 @@ package survey.question;
 import survey.SurveyApp;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TrueFalseQuestion extends MultipleChoiceQuestion {
-    private final int numResponses;
-    private final ChoiceList choiceList = new ChoiceList(new ArrayList<>() {
-        {
-            add("True");
-            add("False");
-        }
-    });
 
     public TrueFalseQuestion() {
         prompt = "";
         numResponses = 1;
-    }
-
-    public ChoiceList getChoiceList() {
-        return choiceList;
-    }
-
-    @Override
-    public String getQuestionType() {
-        return "True/False";
-    }
-
-    @Override
-    public String getResponseType() {
-        return "choice(s)";
+        questionType = "True/False";
+        responseType = "choice";
+        numChoices = 2;
+        choiceList = new ChoiceList(new ArrayList<>() {
+            {
+                add("True");
+                add("False");
+            }
+        });
     }
 
     @Override
@@ -51,7 +38,7 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
         modifyPrompt();
     }
 
-    @Override
+    /*@Override
     protected List<String> getPossibleChoiceCharacters() {
         char choiceCharUpper = 'A';
         char choiceCharLower = 'a';
@@ -68,9 +55,9 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
         }
 
         return result;
-    }
+    }*/
 
-    @Override
+    /*@Override
     public List<String> getValidResponseList() {
         int choiceIndex, i;
         List<String> responseList = new ArrayList<>();
@@ -85,5 +72,5 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
         }
 
         return responseList;
-    }
+    }*/
 }

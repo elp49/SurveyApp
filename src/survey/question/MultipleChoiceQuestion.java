@@ -2,33 +2,21 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import utils.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MultipleChoiceQuestion extends Question {
-    private int numResponses;
-    private int numChoices;
-    private ChoiceList choiceList;
+    protected int numChoices;
+    protected ChoiceList choiceList;
 
     public MultipleChoiceQuestion() {
         super();
+        questionType = "Multiple Choice";
+        responseType = "choice";
         numChoices = 0;
         choiceList = new ChoiceList();
-    }
-
-    public ChoiceList getChoiceList() {
-        return choiceList;
-    }
-
-    @Override
-    public String getQuestionType() {
-        return "Multiple Choice";
-    }
-
-    @Override
-    public String getResponseType() {
-        return "choice(s)";
     }
 
     @Override
@@ -83,15 +71,12 @@ public class MultipleChoiceQuestion extends Question {
     }
 
     protected boolean isValidChoice(String s) {
-        return !SurveyApp.isNullOrEmpty(s);
+        return !Validation.isNullOrBlank(s);
     }
 
     protected int getValidNumChoices() {
         Integer numChoices;
         boolean isValidNumChoices;
-
-        // Get survey.question type.
-        String questionType = getQuestionType();
 
         do {
             // Record number of survey.question responses.
@@ -111,16 +96,18 @@ public class MultipleChoiceQuestion extends Question {
         return i != null && i > 1 && i <= 26;
     }
 
+    @Override
+    protected int getValidNumResponses() {
+        return getValidNumResponses(numChoices);
+    }
+
     protected int getValidNumResponses(int numChoices) {
         Integer numResponses;
         boolean isValidNumResponses;
 
-        // Get survey.question type.
-        String questionType = getQuestionType();
-
         do {
             // Record number of survey.question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of allowed " + getResponseType() + " for your " + questionType + " question.");
+            SurveyApp.out.displayMenuPrompt("Enter the number of allowed " + responseType + "s for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.
@@ -143,8 +130,10 @@ public class MultipleChoiceQuestion extends Question {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Please give " + numResponses + " choice(s).", true);
+        SurveyApp.out.displayQuestionPrompt(new String[]{
+                prompt,
+                "Please give " + numResponses + " choice(s)."
+        });
         SurveyApp.out.displayQuestionChoiceList(choiceList, true);
     }
 
@@ -155,10 +144,10 @@ public class MultipleChoiceQuestion extends Question {
         boolean isReturn = modifyPrompt();
 
         // Test return value.
-        if (!isReturn) modifyNumResponses();
+        if (!isReturn) modifyChoices();
 
         // Test return value.
-        if (!isReturn) modifyChoices();
+        if (!isReturn) modifyNumResponses();
     }
 
     protected boolean modifyNumResponses(String responseType) {
@@ -183,7 +172,7 @@ public class MultipleChoiceQuestion extends Question {
                     newNumResponses = SurveyApp.in.readQuestionChoiceCount();
 
                     // Check if valid new number of responses.
-                    if (!(isValidNumResponses = isValidNumResponses(newNumResponses))) {
+                    if (!(isValidNumResponses = isValidNumResponses(newNumResponses, choiceList.size()))) {
                         SurveyApp.displayInvalidInputMessage("number");
                     } else {
                         // Set the prompt.
@@ -244,6 +233,32 @@ public class MultipleChoiceQuestion extends Question {
         return isReturn;
     }
 
+    @Override
+    protected boolean performResponseValidation(String response) {
+        boolean isValidResponse;
+        int choiceIndex;
+        int A = 65;
+
+        // Test response is one character.
+        if (isValidResponse = response.length() == 1) {
+            // Convert response character to choice index.
+            choiceIndex = response.toUpperCase().charAt(0) - A;
+
+            // Test choice index is in range of choice list.
+            if (isValidResponse = Validation.isInRange(choiceIndex, 0, choiceList.size())) {
+
+            } else {
+                SurveyApp.displayInvalidInputMessage("choice");
+            }
+        } else {
+            SurveyApp.displayInvalidInputMessage("choice");
+        }
+
+        return isValidResponse;
+    }
+
+    /*protected boolean*/
+
     /**
      * Get a valid user choice from choice list.
      *
@@ -301,13 +316,13 @@ public class MultipleChoiceQuestion extends Question {
 
         // Test choice for null or empty string.
         // Test choiceChars if contains choice.
-        if ((!SurveyApp.isNullOrEmpty(choice)))
+        if ((!Validation.isNullOrBlank(choice)))
             isValidUserChoice = choiceChars.contains(choice);
 
         return isValidUserChoice;
     }
 
-    @Override
+    /*@Override
     public List<String> getValidResponseList() {
         int choiceIndex, i;
         List<String> responseList = new ArrayList<>();
@@ -322,5 +337,5 @@ public class MultipleChoiceQuestion extends Question {
         }
 
         return responseList;
-    }
+    }*/
 }

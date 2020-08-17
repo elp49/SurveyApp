@@ -9,6 +9,7 @@ import survey.response.SurveyResponse;
 import utils.FileConfiguration;
 import utils.FileUtils;
 import utils.SerializationHelper;
+import utils.Validation;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,12 +21,15 @@ public class Survey implements Serializable {
     protected static long serialVersionUID = 1L;
     protected static final String basePath = FileConfiguration.SERIALIZED_FILES_DIRECTORY + "Survey" + File.separator;
     protected String name;
+    public final static String NAME_SEPARATOR = "-";
     protected final QuestionFactory questionFactory;
     protected final List<Question> questionList;
+    protected transient SurveyResponse surveyResponse;
 
     public Survey(QuestionFactory questionFactory) {
         this.questionFactory = questionFactory;
         questionList = new ArrayList<>();
+        surveyResponse = null;
     }
 
     public String getName() {
@@ -71,13 +75,13 @@ public class Survey implements Serializable {
      */
     public static Survey load() {
         String surveyPath;
-        boolean isNullOrEmpty;
+        boolean isNullOrBlank;
         boolean isCorrupted = false;
         Survey result = null;
 
         do {
             surveyPath = getSurveyPath();
-            if (!(isNullOrEmpty = SurveyApp.isNullOrEmpty(surveyPath))) {
+            if (!(isNullOrBlank = Validation.isNullOrBlank(surveyPath))) {
                 try {
                     result = Survey.deserialize(surveyPath);
 
@@ -86,7 +90,7 @@ public class Survey implements Serializable {
                     isCorrupted = false;
                 } catch (IOException | ClassNotFoundException ignore) {
                     // Survey file is likely out of sync with survey class.
-                    SurveyApp.out.displayNote(new String[]{
+                    SurveyApp.out.displayAllNotes(new String[]{
                             "This serialized survey file have become corrupted.",
                             "This is likely because SurveyApp has been updated since this file was saved."
                     });
@@ -100,14 +104,14 @@ public class Survey implements Serializable {
             // If the user has chosen a non-corrupted survey to load
             // or if they have no surveys to load, then quit.
             // If a survey was found to be corrupted, then continue.
-        } while (isCorrupted && !isNullOrEmpty);
+        } while (isCorrupted && !isNullOrBlank);
 
         return result;
     }
 
     public void save() {
         // Create survey name.
-        if (SurveyApp.isNullOrEmpty(name)) name = createSurveyName();
+        if (Validation.isNullOrBlank(name)) name = createSurveyName();
 
         try {
             // Try to serialize survey to file on disk.
@@ -120,35 +124,34 @@ public class Survey implements Serializable {
     }
 
     public void take() {
-        String questionType;
-        List<String> responseList;
+        QuestionResponse qr;
 
-        // Create survey response object.
-        SurveyResponse surveyResponse = new SurveyResponse(name);
+        // Initialize survey response object.
+        surveyResponse = new SurveyResponse(name);
 
         // Create survey name.
-        if (SurveyApp.isNullOrEmpty(name)) name = createSurveyName();
+        if (Validation.isNullOrBlank(name)) name = createSurveyName();
 
         // Display survey name.
         SurveyApp.out.displaySurveyName(name);
 
         // Loop through each question.
         for (Question q : questionList) {
-            // Get question type;
-            questionType = q.getQuestionType();
-
             // Display question.
             q.display();
 
-            // Record valid question response.
-            responseList = q.getValidResponseList();
+            // Read user question response.
+            qr = q.readQuestionResponse();
 
-            // Add question response to survey response list.
-            surveyResponse.add(new QuestionResponse(questionType, responseList));
+            // Add question response to survey response.
+            surveyResponse.add(qr);
         }
 
         // Save response.
         surveyResponse.save();
+
+        // Clean up survey response object.
+        surveyResponse = null;
     }
 
     public void modify() {
@@ -187,7 +190,7 @@ public class Survey implements Serializable {
      *
      * @return The path to the chosen survey or null if no surveys are available.
      */
-    private static String getSurveyPath() {
+    protected static String getSurveyPath() {
         String choice;
         String result = null;
         boolean isNullOrEmpty = false;
@@ -229,7 +232,7 @@ public class Survey implements Serializable {
                 if (Survey.delete(surveyPath)) SurveyApp.out.displayNote("Successfully deleted.");
                 else SurveyApp.out.displayNote("Deletion was unsuccessful. :,(");
             } catch (IllegalArgumentException e) {
-                SurveyApp.out.displayNote(new String[]{
+                SurveyApp.out.displayAllNotes(new String[]{
                         "Oops, that file does not exist.",
                         "This could be an issue relating to the file path."
                 });
@@ -261,7 +264,7 @@ public class Survey implements Serializable {
         List<String> allSurveyNames = null;
 
         // The number to follow survey's name.
-        Integer surveyNumber = 1;
+        Integer nextSmallest = 1;
 
         try {
             // Try to get the names of all surveys.
@@ -274,45 +277,48 @@ public class Survey implements Serializable {
             do {
                 // Assume we already found the next smallest number.
                 foundNumber = true;
+
                 for (String s : allSurveyNames) {
                     // Try to parse survey number from name.
                     num = parseSurveyNumber(s);
 
                     if (num != null) {
                         // If this number is already taken, increment and try again.
-                        if (num.equals(surveyNumber)) {
+                        if (num.equals(nextSmallest)) {
                             foundNumber = false;
-                            surveyNumber++;
+                            nextSmallest++;
+
                             break;
                         }
                     }
                 }
 
                 // If foundNumber is still true by the time it gets here,
-                // then no other survey has taken the number it.
+                // then no other survey has taken the number.
             } while (!foundNumber);
         }
 
-        return surveyNumber;
+        return nextSmallest;
     }
 
     /**
      * Try to parse a survey's number from its name.
      *
-     * @return The survey number or null if it does not follow the
-     * expected naming convention.
+     * @param surveyName the survey name
+     * @return the survey number or null if it does not follow the
+     * expected naming convention: Survey-[DIGIT]
      */
     protected Integer parseSurveyNumber(String surveyName) {
+        String num;
         Integer result = null;
 
-        // Get indices of survey number.
-        int beginIndex = surveyName.lastIndexOf("-") + 1;
-        int endIndex = surveyName.length();
-
-        // Try to parse survey number from name.
         try {
-            result = Integer.parseInt(surveyName.substring(beginIndex, endIndex));
-        } catch (NumberFormatException ignore) {
+            // Try to get number from survey name.
+            num = surveyName.split(NAME_SEPARATOR)[1];
+
+            // Try to parse survey number from name.
+            result = Integer.parseInt(num);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignore) {
         }
 
         return result;

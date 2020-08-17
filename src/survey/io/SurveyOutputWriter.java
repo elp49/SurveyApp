@@ -9,9 +9,9 @@ public interface SurveyOutputWriter {
 
     void displayNote(String note, boolean isInline);
 
-    void displayNote(String[] note);
+    void displayAllNotes(String[] note);
 
-    void displayNote(String[] note, boolean isInline);
+    void displayAllNotes(String[] note, boolean isInline);
 
     void displayMenu(String prompt, List<String> choices);
 
@@ -24,6 +24,8 @@ public interface SurveyOutputWriter {
     void displayMenuOptions(List<String> options);
 
     void displayQuestionPrompt(String prompt);
+
+    void displayQuestionPrompt(String[] prompt);
 
     void displayQuestionChoiceList(ChoiceList choiceList);
 

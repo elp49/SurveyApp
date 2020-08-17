@@ -2,42 +2,40 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
+import utils.Validation;
 
 import java.io.Serializable;
-import java.util.List;
 
 public abstract class Question implements Serializable {
     private static long serialVersionUID = 1L;
     protected String prompt;
     protected int numResponses;
+    protected String questionType;
+    protected String responseType;
+    protected transient QuestionResponse questionResponse;
 
     public Question() {
         prompt = "";
         numResponses = 0;
+        questionType = "Unknown Question Type";
+        responseType = "response";
+        questionResponse = null;
     }
 
     public String getPrompt() {
         return prompt;
     }
 
-    public int getNumResponses() {
-        return numResponses;
-    }
-
-    public abstract String getQuestionType();
-
-    public String getResponseType() {
-        return "responses";
+    public String getQuestionType() {
+        return questionType;
     }
 
     public abstract void create();
 
     protected String getValidPrompt() {
         String prompt;
-        boolean isNullOrEmpty;
-
-        // Get question type.
-        String questionType = getQuestionType();
+        boolean isNullOrBlank;
 
         do {
             // Record question prompt.
@@ -45,10 +43,10 @@ public abstract class Question implements Serializable {
             prompt = SurveyApp.in.readQuestionPrompt();
 
             // Check if valid prompt.
-            if (isNullOrEmpty = SurveyApp.isNullOrEmpty(prompt)) {
+            if (isNullOrBlank = Validation.isNullOrBlank(prompt)) {
                 SurveyApp.displayInvalidInputMessage("prompt");
             }
-        } while (isNullOrEmpty);
+        } while (isNullOrBlank);
 
         return prompt;
     }
@@ -59,7 +57,7 @@ public abstract class Question implements Serializable {
 
         do {
             // Record number of question responses.
-            SurveyApp.out.displayMenuPrompt("Enter the number of " + getResponseType() + " for your " + getQuestionType() + " question.");
+            SurveyApp.out.displayMenuPrompt("Enter the number of " + responseType + "s for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.
@@ -87,7 +85,7 @@ public abstract class Question implements Serializable {
      */
     protected boolean modifyPrompt() {
         String choice, newPrompt;
-        boolean isNullOrEmpty;
+        boolean isNullOrBlank;
         boolean isReturn = false;
 
         // Display the current prompt.
@@ -108,14 +106,13 @@ public abstract class Question implements Serializable {
                     SurveyApp.out.displayMenuPrompt("Enter a new prompt:");
                     newPrompt = SurveyApp.in.readQuestionPrompt();
 
-                    // Check if valid prompt.
-                    if (isNullOrEmpty = SurveyApp.isNullOrEmpty(newPrompt)) {
-                        SurveyApp.displayInvalidInputMessage("prompt");
-                    } else {
-                        // Set the prompt.
+                    // Test if valid prompt.
+                    if (!(isNullOrBlank = Validation.isNullOrBlank(newPrompt)))
                         prompt = newPrompt;
-                    }
-                } while (isNullOrEmpty);
+                    else
+                        SurveyApp.displayInvalidInputMessage("prompt");
+
+                } while (isNullOrBlank);
 
                 break;
 
@@ -132,10 +129,6 @@ public abstract class Question implements Serializable {
     }
 
     protected boolean modifyNumResponses() {
-        return modifyNumResponses("responses");
-    }
-
-    protected boolean modifyNumResponses(String responseType) {
         String choice;
         Integer newNumResponses;
         boolean isValidNumResponses;
@@ -179,5 +172,36 @@ public abstract class Question implements Serializable {
         return isReturn;
     }
 
-    public abstract List<String> getValidResponseList();
+    public QuestionResponse readQuestionResponse() {
+        int i;
+        String response;
+        boolean isValidResponse;
+        QuestionResponse qr;
+
+        // Initialize question response object.
+        questionResponse = new QuestionResponse();
+
+        // Loop until user gives valid response(s).
+        for (i = 0; i < numResponses; i++) {
+            do {
+                // Record user response.
+                response = SurveyApp.in.readQuestionResponse();
+
+                // Test response validity.
+                isValidResponse = performResponseValidation(response);
+
+            } while (!isValidResponse);
+
+            // Add response string to question response.
+            questionResponse.add(response);
+        }
+
+        // Clean up question response object.
+        qr = questionResponse;
+        questionResponse = null;
+
+        return qr;
+    }
+
+    protected abstract boolean performResponseValidation(String response);
 }

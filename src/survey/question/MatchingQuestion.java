@@ -2,6 +2,7 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import utils.Validation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +14,9 @@ public class MatchingQuestion extends Question {
 
     public MatchingQuestion() {
         super();
+        questionType = "Matching";
+        responseType = "match";
         choiceSet = new ArrayList<>();
-    }
-
-    @Override
-    public String getQuestionType() {
-        return "Matching";
-    }
-
-    @Override
-    public String getResponseType() {
-        return "matches";
     }
 
     @Override
@@ -98,7 +91,7 @@ public class MatchingQuestion extends Question {
     }
 
     protected boolean isValidChoice(String s) {
-        return !SurveyApp.isNullOrEmpty(s);
+        return !Validation.isNullOrBlank(s);
     }
 
     @Override
@@ -115,6 +108,11 @@ public class MatchingQuestion extends Question {
 
         // Test return value.
         if (!isReturn) modifyChoices();
+    }
+
+    @Override
+    protected boolean performResponseValidation(String response) {
+        return false;
     }
 
     protected boolean modifyChoices() {
@@ -240,17 +238,17 @@ public class MatchingQuestion extends Question {
             // Get user matching response.
             response = SurveyApp.in.readQuestionResponse();
 
-            if (isValid = !SurveyApp.isNullOrEmpty(response)) {
+            if (isValid = !Validation.isNullOrBlank(response)) {
                 // Parse first column character.
-                match[0] = parseColumnOneCharacter(response);
+                match[0] = parseMatchChar(response);
 
                 // Test first column choice.
                 if (isValid = match[0].matches("([a-z]|([A-Z]))")) {
                     // Parse second column number.
-                    match[1] = parseColumnTwoNumber(response);
+                    match[1] = parseMatchNum(response);
 
                     // Test second column choice.
-                    isValid = secondColumnNumberIsValid(match[1].trim());
+                    isValid = isValidNumber(match[1].trim());
                 } else {
                     SurveyApp.displayInvalidInputMessage("response");
                 }
@@ -262,7 +260,7 @@ public class MatchingQuestion extends Question {
         return match;
     }
 
-    private boolean secondColumnNumberIsValid(String num) {
+    private boolean isValidNumber(String num) {
         Integer n = null;
         boolean isValid = true;
 
@@ -272,7 +270,7 @@ public class MatchingQuestion extends Question {
             isValid = false;
         }
 
-        if (n != null) isValid = n > 0 && n <= 26;
+        if (n != null) isValid = Validation.isInRange(n, 1, 26);
 
         return isValid;
     }
@@ -311,7 +309,7 @@ public class MatchingQuestion extends Question {
      * @param matchPair the match pair that is to be parsed
      * @return the parsed first column character
      */
-    protected String parseColumnOneCharacter(String matchPair) {
+    protected String parseMatchChar(String matchPair) {
         return Character.toString(matchPair.charAt(0));
     }
 
@@ -321,7 +319,7 @@ public class MatchingQuestion extends Question {
      * @param matchPair the match pair that is to be parsed
      * @return the parsed second column number
      */
-    protected String parseColumnTwoNumber(String matchPair) {
+    protected String parseMatchNum(String matchPair) {
         return matchPair.substring(1).trim();
     }
 }

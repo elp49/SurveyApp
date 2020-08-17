@@ -1,20 +1,13 @@
 package survey.question;
 
 import survey.SurveyApp;
-
-import java.util.ArrayList;
-import java.util.List;
+import utils.Validation;
 
 public class EssayQuestion extends Question {
-    private int numResponses;
 
     public EssayQuestion() {
         super();
-    }
-
-    @Override
-    public String getQuestionType() {
-        return "Essay";
+        questionType = "Essay";
     }
 
     @Override
@@ -29,7 +22,7 @@ public class EssayQuestion extends Question {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Please give " + numResponses + " response(s).", true);
+        SurveyApp.out.displayNote("Please give " + numResponses + " " + responseType + "s.", true);
     }
 
     @Override
@@ -42,45 +35,20 @@ public class EssayQuestion extends Question {
         if (!isReturn) modifyNumResponses();
     }
 
+    /**
+     * Determines if the question response is a valid essay response.
+     *
+     * @param response the essay response.
+     * @return true if the response is valid, otherwise false.
+     */
     @Override
-    public List<String> getValidResponseList() {
-        int i;
-        String response, reason;
-        boolean isNullOrEmpty;
-        List<String> responseList = new ArrayList<>();
+    protected boolean performResponseValidation(String response) {
+        boolean isValid;
 
-        // Loop until user gives valid response(s).
-        for (i = 1; i <= numResponses; i++) {
-            do {
-                // Record response.
-                response = SurveyApp.in.readQuestionResponse();
+        // Test for null or blank string.
+        if (!(isValid = !Validation.isNullOrBlank(response)))
+            SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-                // Get reason why response is invalid or empty string if is valid.
-                reason = getReasonWhyResponseIsInvalid(response);
-
-                // Test if valid response.
-                if (!(isNullOrEmpty = SurveyApp.isNullOrEmpty(reason))) {
-                    SurveyApp.displayInvalidInputMessage(getResponseType());
-                    SurveyApp.out.displayNote(reason);
-                }
-
-                // If the user response is invalid, getReasonWhyResponseIsInvalid will
-                // return the reason why as a string and isNullOrEmpty will be false.
-            } while (!isNullOrEmpty);
-
-            // Add response to response list.
-            responseList.add(response);
-        }
-
-        return responseList;
-    }
-
-    protected String getReasonWhyResponseIsInvalid(String response) {
-        String reason = "";
-
-        // Test for null or empty string.
-        if (SurveyApp.isNullOrEmpty(response)) reason = "Your " + getResponseType() + " cannot be empty.";
-
-        return reason;
+        return isValid;
     }
 }

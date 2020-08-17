@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * The Main Menu of Survey App: used to determine the main action.
  */
-public class MainMenu extends Menu {
+public class MainMenu {
     public static final String PROMPT = "Main Menu";
     public static final String CREATE_SURVEY = "Create a new Survey";
     public static final String DISPLAY_SURVEY = "Display an existing Survey";
