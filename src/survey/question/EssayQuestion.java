@@ -22,7 +22,7 @@ public class EssayQuestion extends Question {
     @Override
     public void display() {
         SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Please give " + numResponses + " " + responseType + "s.", true);
+        SurveyApp.out.displayNote("Please give " + numResponses + " " + responseType + "(s).", true);
     }
 
     @Override
@@ -36,19 +36,18 @@ public class EssayQuestion extends Question {
     }
 
     /**
-     * Determines if the question response is a valid essay response.
+     * Determines if the essay response is valid. If it is invalid, report why.
      *
-     * @param response the essay response.
-     * @return true if the response is valid, otherwise false.
+     * @return the response string
      */
-    @Override
-    protected boolean performResponseValidation(String response) {
-        boolean isValid;
+    protected String getValidResponse() {
+        // Record user response.
+        String response = SurveyApp.in.readQuestionResponse();
 
         // Test for null or blank string.
-        if (!(isValid = !Validation.isNullOrBlank(response)))
+        if (!Validation.isNullOrBlank(response))
             SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-        return isValid;
+        return response;
     }
 }

@@ -106,11 +106,11 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         String ls = lineSeparator();
 
         // Initialize string builder with two line separators.
-        StringBuilder sb = new StringBuilder(ls + ls);
+        StringBuilder sb = new StringBuilder(ls);
 
         // Append question prompt.
         for (String s : prompt)
-            sb.append(s);
+            sb.append(ls).append(s);
 
         println(sb.toString());
     }

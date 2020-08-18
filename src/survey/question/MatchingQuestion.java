@@ -2,6 +2,7 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
 import utils.Validation;
 
 import java.util.ArrayList;
@@ -110,11 +111,6 @@ public class MatchingQuestion extends Question {
         if (!isReturn) modifyChoices();
     }
 
-    @Override
-    protected boolean performResponseValidation(String response) {
-        return false;
-    }
-
     protected boolean modifyChoices() {
         int choiceListIndex, choiceIndex;
         String newChoice;
@@ -123,11 +119,11 @@ public class MatchingQuestion extends Question {
         // Determine if user will modify question choices.
         String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
 
-        // Display choice set.
-        SurveyApp.out.displayQuestionChoiceSet(choiceSet);
-
         switch (choice) {
             case ModifyQuestionMenu.YES:
+                // Display choice set.
+                SurveyApp.out.displayQuestionChoiceSet(choiceSet);
+
                 // Get index of choice in options list.
                 choiceListIndex = getChoiceListIndex();
 
@@ -243,7 +239,7 @@ public class MatchingQuestion extends Question {
                 match[0] = parseMatchChar(response);
 
                 // Test first column choice.
-                if (isValid = match[0].matches("([a-z]|([A-Z]))")) {
+                if (isValid = Validation.isAlphabeticLetter(match[0])) {
                     // Parse second column number.
                     match[1] = parseMatchNum(response);
 
@@ -288,6 +284,10 @@ public class MatchingQuestion extends Question {
         int i;
         String choiceChar;
         boolean isValidMatch = false;
+
+        // Test if either choice has already been recorded.
+        for (QuestionResponse qr : questionResponse)
+            if (!(isValidMatch = isValidMatch(match, s))) break;
 
         for (i = 0; i < match.length; i++) {
             // Parse pre-recorded choice.

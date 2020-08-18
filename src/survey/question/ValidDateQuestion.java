@@ -36,100 +36,108 @@ public class ValidDateQuestion extends ShortAnswerQuestion {
         });
     }
 
-    /*@Override
-    public List<String> getValidResponseList() {
-        int i;
-        String response, reason;
-        boolean isNullOrEmpty;
-        List<String> responseList = new ArrayList<>();
-
-        // Loop until user gives valid response(s).
-        for (i = 1; i <= numResponses; i++) {
-            do {
-                // Record response.
-                response = SurveyApp.in.readQuestionResponse();
-
-                // Get reason why response is invalid or empty string if is valid.
-                reason = getReasonWhyResponseIsInvalid(response);
-
-                // Test if valid response.
-                if (!(isNullOrEmpty = SurveyApp.isNullOrEmpty(reason))) {
-                    SurveyApp.displayInvalidInputMessage(getResponseType());
-                    SurveyApp.out.displayNote(reason);
-                }
-
-                // If the user response is invalid, getReasonWhyResponseIsInvalid will
-                // return the reason why as a string and isNullOrEmpty will be false.
-            } while (!isNullOrEmpty);
-
-            // Add response to response list.
-            responseList.add(response);
-        }
-
-        return responseList;
-    }*/
-
-
     /**
-     * Determines if the question response is a valid date.
+     * Determines if the date is valid. If it is invalid, report why.
      *
-     * @param response the valid date.
-     * @return true if the response is valid, otherwise false.
+     * @return the response string
      */
-    @Override
-    protected boolean performResponseValidation(String response) {
-        boolean isValid;
+    protected String getValidResponse() {
+        // Record user response.
+        String response = SurveyApp.in.readQuestionResponse();
 
         // Test for null or blank string.
-        if (!(isValid = !Validation.isNullOrBlank(response)))
+        if (!Validation.isNullOrBlank(response))
             SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-            // Test for incorrect date format or non integer values.
-        else if (!(isValid = isValidDate(response)))
-            SurveyApp.out.displayNote("Your " + responseType + " must be entered in the following format: "
-                    + DATE_FORMAT);
+            // Test for invalid date format or non integer values.
+        else if (!isValidDate(response)) {
+            SurveyApp.out.displayNote("Your " + responseType + " must be in the following format: " + DATE_FORMAT);
 
-        return isValid;
+            // Clean up invalid response.
+            response = null;
+        }
+
+        return response;
     }
 
-    //TODO: give more description response for why invalid.
+    /**
+     * Determine if the user entered date string is valid.
+     *
+     * @param date the user entered date string
+     * @return true if it is valid, otherwise false
+     */
     protected boolean isValidDate(String date) {
+        int[] dateArray;
+
+        // Get formatted date array or null if date does not follow format.
+        if (null == (dateArray = getFormattedDateArray(date))) return false;
+
+        return isRealDate(dateArray[0], dateArray[1], dateArray[2]);
+    }
+
+    /**
+     * Build and return a formatted date array of type int[] of size three.
+     * The elements are month, day, and year respectively.
+     *
+     * @param date the date string to be formatted
+     * @return the formatted date string
+     */
+    protected int[] getFormattedDateArray(String date) {
         int i;
         String[] responseStrArray, formatStrArray;
-        int[] responseIntArray = new int[3];
+        int[] dateArray = new int[3];
 
-        // Test invalid response length.
-        if (date.length() != DATE_FORMAT.length()) return false;
+        // Test valid response length.
+        if (date.length() == DATE_FORMAT.length()) return null;
 
         // Split response and date format into array.
-        responseStrArray = date.split("-");
-        formatStrArray = DATE_FORMAT.split("-");
+        responseStrArray = date.split(SEPARATOR);
+        formatStrArray = DATE_FORMAT.split(SEPARATOR);
 
         // Test invalid number of tokens.
-        if (responseStrArray.length != formatStrArray.length) return false;
+        if (responseStrArray.length != formatStrArray.length) return null;
 
         for (i = 0; i < responseStrArray.length; i++) {
             // Test length of each element.
-            if (responseStrArray[i].length() != formatStrArray[i].length()) return false;
+            if (responseStrArray[i].length() != formatStrArray[i].length()) return null;
 
             try {
                 // Test invalid number.
-                responseIntArray[i] = Integer.parseInt(responseStrArray[i]);
+                dateArray[i] = Integer.parseInt(responseStrArray[i]);
             } catch (NumberFormatException ignore) {
-                return false;
+                return null;
             }
         }
 
+        return dateArray;
+    }
+
+    /**
+     * Determine if the provided date is a real date. Ignore years before 1 AD.
+     *
+     * @param month the month number
+     * @param day   the day number
+     * @param year  the year number
+     * @return true if it is a real date, otherwise false
+     */
+    protected boolean isRealDate(int month, int day, int year) {
         // Test out of range month.
-        if (responseIntArray[0] < 1 || responseIntArray[0] > 12) return false;
+        if (month < 1 || month > 12) return false;
 
         // Test out of range day.
-        if (responseIntArray[1] < 1 || responseIntArray[1] > 31) return false;
+        if (day < 1 || day > 31) return false;
 
         // Test out of range year.
-        if (responseIntArray[2] < 1) return false;
+        if (year < 1) return false;
 
-        //TODO: validate months with less than 31 days.
+            // Test months with only 30 days.
+        else if (day == 31 && (month == 2 || month == 4 || month == 6 || month == 9 || month == 11)) return false;
+
+            // Test for leap year.
+        else if (month == 2 && day == 29) {
+            if (year % 4 != 0) return false;
+            else if (year % 100 == 0 && year % 400 != 0) return false;
+        }
 
         return true;
     }

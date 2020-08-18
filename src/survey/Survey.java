@@ -158,10 +158,13 @@ public class Survey implements Serializable {
         String choice;
         boolean isReturn;
         int index;
-        List<String> options = new ArrayList<>();
+        List<String> options;
 
         if (!questionList.isEmpty()) {
             do {
+                // Initialize options list.
+                options = new ArrayList<>();
+
                 // Add each question's type to options list.
                 for (Question q : questionList)
                     options.add("Type: " + q.getQuestionType() + ",  Prompt: " + q.getPrompt());
@@ -176,7 +179,10 @@ public class Survey implements Serializable {
                 }, options);
 
                 if (!(isReturn = choice.equals(Menu.RETURN))) {
+                    // Get index of question to be modified.
                     index = options.indexOf(choice);
+
+                    // Modify question.
                     questionList.get(index).modify();
                 }
             } while (!isReturn);

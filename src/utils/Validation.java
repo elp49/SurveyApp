@@ -14,4 +14,8 @@ public class Validation {
     public static boolean isInRange(int num, int min, int max) {
         return num >= min && num <= max;
     }
+
+    public static boolean isAlphabeticLetter(String s) {
+        return s.matches("([a-z]|([A-Z]))");
+    }
 }

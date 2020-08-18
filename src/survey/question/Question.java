@@ -20,7 +20,7 @@ public abstract class Question implements Serializable {
         numResponses = 0;
         questionType = "Unknown Question Type";
         responseType = "response";
-        questionResponse = null;
+        questionResponse = new QuestionResponse();
     }
 
     public String getPrompt() {
@@ -78,8 +78,8 @@ public abstract class Question implements Serializable {
     public abstract void modify();
 
     /**
-     * Determine if the user would like to modify their question prompt and
-     * if so set the new prompt.
+     * Determine if the user would like to modify their question prompt.
+     * If yes, then get and set the new prompt.
      *
      * @return true if the user chose to return to the previous menu, otherwise false.
      */
@@ -172,25 +172,22 @@ public abstract class Question implements Serializable {
         return isReturn;
     }
 
+    /**
+     * Read user input until a valid question response is given.
+     *
+     * @return the valid question response
+     */
     public QuestionResponse readQuestionResponse() {
         int i;
         String response;
-        boolean isValidResponse;
         QuestionResponse qr;
-
-        // Initialize question response object.
-        questionResponse = new QuestionResponse();
 
         // Loop until user gives valid response(s).
         for (i = 0; i < numResponses; i++) {
             do {
-                // Record user response.
-                response = SurveyApp.in.readQuestionResponse();
-
-                // Test response validity.
-                isValidResponse = performResponseValidation(response);
-
-            } while (!isValidResponse);
+                // Get a valid question response.
+                response = getValidResponse();
+            } while (Validation.isNullOrBlank(response));
 
             // Add response string to question response.
             questionResponse.add(response);
@@ -198,10 +195,10 @@ public abstract class Question implements Serializable {
 
         // Clean up question response object.
         qr = questionResponse;
-        questionResponse = null;
+        questionResponse.clear();
 
         return qr;
     }
 
-    protected abstract boolean performResponseValidation(String response);
+    protected abstract String getValidResponse();
 }
