@@ -3,141 +3,106 @@ package survey.response;
 import java.io.Serializable;
 import java.util.*;
 
-public class QuestionResponse<String> implements Serializable, List<String> {
+public class QuestionResponse implements Serializable {
     protected final List<String> responseList;
 
     public QuestionResponse() {
         responseList = new ArrayList<>();
     }
 
-    @Override
+    public List<String> getResponseList() {
+        return responseList;
+    }
+
     public int size() {
         return responseList.size();
     }
 
-    @Override
     public boolean isEmpty() {
         return responseList.isEmpty();
     }
 
-    @Override
-    public boolean contains(Object o) {
-        return responseList.contains(o);
+    public boolean contains(String s) {
+        return responseList.contains(s);
     }
 
-    @Override
     public Iterator<String> iterator() {
         return responseList.iterator();
     }
 
-    @Override
     public Object[] toArray() {
         return responseList.toArray();
     }
 
-    @Override
-    public boolean add(Object o) {
-        return responseList.add((String) o);
+    public boolean add(String s) {
+        return responseList.add(s);
     }
 
-    @Override
-    public boolean remove(Object o) {
-        return responseList.remove(o);
+    public boolean remove(String s) {
+        return responseList.remove(s);
     }
 
-    @Override
-    public boolean addAll(Collection c) {
-        Collection<String> list = new ArrayList<>();
-        for (Object o : c)
-            list.add((String) o);
-
-        return responseList.addAll(list);
+    public boolean addAll(Collection<String> c) {
+        return responseList.addAll(c);
     }
 
-    @Override
-    public boolean addAll(int index, Collection c) {
-        Collection<String> list = new ArrayList<>();
-        for (Object o : c)
-            list.add((String) o);
-
-        return responseList.addAll(index, list);
+    public boolean addAll(int index, Collection<String> c) {
+        return responseList.addAll(index, c);
     }
 
-    @Override
     public void clear() {
         responseList.clear();
     }
 
-    @Override
     public String get(int index) {
         return responseList.get(index);
     }
 
-    @Override
-    public Object set(int index, Object element) {
-        return responseList.set(index, (String) element);
+    public String set(int index, String s) {
+        return responseList.set(index, s);
     }
 
-    @Override
-    public void add(int index, Object element) {
-        responseList.add(index, (String) element);
+    public void add(int index, String s) {
+        responseList.add(index, s);
     }
 
-    @Override
     public String remove(int index) {
         return responseList.remove(index);
     }
 
-    @Override
-    public int indexOf(Object o) {
-        return responseList.indexOf(o);
+    public int indexOf(String s) {
+        return responseList.indexOf(s);
     }
 
-    @Override
-    public int lastIndexOf(Object o) {
-        return responseList.lastIndexOf(0);
+    public int lastIndexOf(String s) {
+        return responseList.lastIndexOf(s);
     }
 
-    @Override
     public ListIterator<String> listIterator() {
         return responseList.listIterator();
     }
 
-    @Override
     public ListIterator<String> listIterator(int index) {
         return responseList.listIterator(index);
     }
 
-    @Override
     public List<String> subList(int fromIndex, int toIndex) {
         return responseList.subList(fromIndex, toIndex);
     }
 
-    @Override
-    public boolean retainAll(Collection c) {
-        Collection<String> list = new ArrayList<>();
-        for (Object o : c)
-            list.add((String) o);
-
-        return responseList.retainAll(list);
+    public boolean retainAll(Collection<String> c) {
+        return responseList.retainAll(c);
     }
 
-    @Override
-    public boolean removeAll(Collection c) {
-        Collection<String> list = new ArrayList<>();
-        for (Object o : c)
-            list.add((String) o);
-
-        return responseList.removeAll(list);
+    public boolean removeAll(Collection<String> c) {
+        return responseList.removeAll(c);
     }
 
-    @Override
-    public boolean containsAll(Collection c) {
+    public boolean containsAll(Collection<String> c) {
         return responseList.containsAll(c);
     }
 
-    @Override
-    public Object[] toArray(Object[] a) {
+    public Object[] toArray(String[] a) {
         return responseList.toArray(a);
     }
 }

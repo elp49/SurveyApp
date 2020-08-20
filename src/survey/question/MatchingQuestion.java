@@ -2,7 +2,6 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
-import survey.response.QuestionResponse;
 import utils.Validation;
 
 import java.util.ArrayList;
@@ -113,7 +112,8 @@ public class MatchingQuestion extends Question {
 
     protected boolean modifyChoices() {
         int choiceListIndex, choiceIndex;
-        String newChoice;
+        String newChoice, response;
+        String[] match;
         boolean isReturn = false;
 
         // Determine if user will modify question choices.
@@ -121,8 +121,17 @@ public class MatchingQuestion extends Question {
 
         switch (choice) {
             case ModifyQuestionMenu.YES:
-                // Display choice set.
-                SurveyApp.out.displayQuestionChoiceSet(choiceSet);
+                /*// Display choice set.
+                SurveyApp.out.displayQuestionPrompt("Which choice do you want to modify?");
+                SurveyApp.out.displayQuestionChoiceSet(choiceSet, true);
+
+                // Get the choice to be modified.
+                response = getPossibleMatch();
+
+                // Split the choices.
+                match = splitMatch(response);
+
+                */
 
                 // Get index of choice in options list.
                 choiceListIndex = getChoiceListIndex();
@@ -191,135 +200,165 @@ public class MatchingQuestion extends Question {
         return choiceList.indexOf(choice);
     }
 
-    public List<String> getValidResponseList() {
-        int i;
-        boolean isValidMatch = true;
-        String[] match;
-        List<String> responseList = new ArrayList<>();
+    public String getValidResponse() {
+        boolean isValidMatch;
+        String newMatch;
 
-        for (i = 0; i < numResponses; i++) {
-            do {
-                // Get possible valid match as array of two strings.
-                match = getPossibleValidMatch();
+        do {
+            // Get a possible match.
+            newMatch = getPossibleMatch();
 
-                // Test if either choice has already been recorded.
-                for (String s : responseList)
-                    if (!(isValidMatch = isValidMatch(match, s))) break;
+            // Test match for null.
+            isValidMatch = isValidMatch(newMatch);
 
-                // If user enters a choice that has already been entered, then invalidMatch
-                // will be true and loop will continue until a valid match is entered.
-            } while (!isValidMatch);
+            // If user enters an impossible match or if one of the choices has
+            // already been entered, then isValidMatch will be false.
+        } while (!isValidMatch);
 
-            // Create response string and add to response list.
-            responseList.add(match[0] + SEPARATOR + match[1]);
-        }
-
-        return responseList;
+        return newMatch;
     }
 
-    /**
-     * Get a match that is possible valid. This will confirm that the two choices
-     * in the match do exist within the possible combination of matches. However,
-     * it does not check if either of those two choices in the match have already
-     * been chosen.
-     *
-     * @return the possible valid match as a string array of size two
-     */
-    protected String[] getPossibleValidMatch() {
-        String response;
+    protected String getPossibleMatch() {
         boolean isValid;
-        String[] match = new String[2];
+        String response;
+        String[] match;
 
         do {
             // Get user matching response.
             response = SurveyApp.in.readQuestionResponse();
 
-            if (isValid = !Validation.isNullOrBlank(response)) {
-                // Parse first column character.
-                match[0] = parseMatchChar(response);
-
-                // Test first column choice.
-                if (isValid = Validation.isAlphabeticLetter(match[0])) {
-                    // Parse second column number.
-                    match[1] = parseMatchNum(response);
-
-                    // Test second column choice.
-                    isValid = isValidNumber(match[1].trim());
-                } else {
-                    SurveyApp.displayInvalidInputMessage("response");
-                }
+            // Test for null or blank response.
+            if (!(isValid = !Validation.isNullOrBlank(response))) {
+                SurveyApp.displayInvalidInputMessage(responseType);
             } else {
-                SurveyApp.displayInvalidInputMessage("response");
+                // Split the match.
+                match = splitMatch(response);
+
+                // Test choice character index is in range of choice list.
+                if (!(isValid = isPossibleChar(match[0]))) {
+                    SurveyApp.out.displayNote(match[0] + " is not an available choice.");
+                } else if (!(isValid = isPossibleNumber(match[1]))) {
+                    SurveyApp.out.displayNote(match[1] + " is not an available choice.");
+                }
             }
         } while (!isValid);
 
-        return match;
-    }
-
-    private boolean isValidNumber(String num) {
-        Integer n = null;
-        boolean isValid = true;
-
-        try {
-            n = Integer.parseInt(num);
-        } catch (NumberFormatException ignore) {
-            isValid = false;
-        }
-
-        if (n != null) isValid = Validation.isInRange(n, 1, 26);
-
-        return isValid;
+        return response;
     }
 
     /**
-     * Determine is the provided match contains one of the same choices that is
-     * in the pre-recorded match.
+     * Parse each column and separate the given match string into an array.
      *
-     * @param match            the match
-     * @param prerecordedMatch the pre-recorded match
-     * @return true if the provided match does not contain any of the same
-     * choices that are within the pre-recorded match, otherwise false
+     * @param match the match to be split
+     * @return the split match or null if match is null or blank
      */
-    protected boolean isValidMatch(String[] match, String prerecordedMatch) {
+    protected String[] splitMatch(String match) {
+        String[] result = null;
+
+        // Test match for null or blank.
+        if (!Validation.isNullOrBlank(match)) {
+            result = new String[]{
+                    match.substring(0, 1),
+                    match.substring(1)
+            };
+        }
+
+        return result;
+    }
+
+    /**
+     * Determine if the character is a possible choice given the choice set.
+     *
+     * @param c the character to be tested
+     * @return true if the character is a possible choice, otherwise false
+     */
+    protected boolean isPossibleChar(String c) {
+        boolean isPossibleChar;
+
+        // Get choice character index.
+        int choiceIndex = getChoiceCharIndex(c);
+
+        // Test choice character index is in range of possible choices.
+        isPossibleChar = Validation.isInRange(choiceIndex, 0, choiceSet.get(0).size() - 1);
+
+        return isPossibleChar;
+    }
+
+    /**
+     * Parse the choice character index.
+     *
+     * @param choiceChar the choice character index to be parsed
+     * @return the parsed choice character index or null
+     */
+    protected int getChoiceCharIndex(String choiceChar) {
+        return choiceChar.toUpperCase().charAt(0) - 65;
+    }
+
+    /**
+     * Determine if the number is a possible choice given the choice set.
+     *
+     * @param n the number to be tested
+     * @return true if the number is a possible choice, otherwise false
+     */
+    protected boolean isPossibleNumber(String n) {
+        boolean isPossibleNumber = false;
+
+        // Get choice number index.
+        Integer num = getChoiceNumIndex(n);
+
+        // Test number is in range of possible choices.
+        if (num != null)
+            isPossibleNumber = Validation.isInRange(num, 1, choiceSet.get(1).size());
+
+        return isPossibleNumber;
+    }
+
+    /**
+     * Parse the choice number index.
+     *
+     * @param n the choice number string to be parse
+     * @return the parsed choice number index or null
+     */
+    protected Integer getChoiceNumIndex(String n) {
+        Integer num;
+
+        try {
+            num = Integer.parseInt(n) - 1;
+        } catch (NumberFormatException ignore) {
+            num = null;
+        }
+
+        return num;
+    }
+
+    /**
+     * Determine if the possible match contains valid a choices that have not
+     * yet been chosen.
+     *
+     * @param possibleMatch the possible match
+     * @return true if neither of the choices in the possible match have been
+     * chosen yet, otherwise false
+     */
+    protected boolean isValidMatch(String possibleMatch) {
         int i;
-        String choiceChar;
-        boolean isValidMatch = false;
+        boolean isValidMatch;
+        String[] existingMatch;
 
-        // Test if either choice has already been recorded.
-        for (QuestionResponse qr : questionResponse)
-            if (!(isValidMatch = isValidMatch(match, s))) break;
+        // Split the possible match.
+        String[] matchArray = splitMatch(possibleMatch);
 
-        for (i = 0; i < match.length; i++) {
-            // Parse pre-recorded choice.
-            choiceChar = prerecordedMatch.split(":")[i];
+        if (isValidMatch = (matchArray != null)) {
+            // Loop through existing user matches.
+            for (String s : questionResponse.getResponseList()) {
+                // Split the existing user match.
+                existingMatch = splitMatch(s);
 
-            // Test each choice in match against pre-recorded match.
-            if (!(isValidMatch = !match[i].equals(choiceChar))) {
-                SurveyApp.out.displayNote("You already entered choice " + match[i]);
-                break;
+                // Test if either choice from the new match has already been recorded.
+                for (i = 0; i < matchArray.length; i++)
+                    if (!(isValidMatch = !matchArray[i].equals(existingMatch[i]))) break;
             }
         }
 
         return isValidMatch;
-    }
-
-    /**
-     * Parse the first column character in match pair.
-     *
-     * @param matchPair the match pair that is to be parsed
-     * @return the parsed first column character
-     */
-    protected String parseMatchChar(String matchPair) {
-        return Character.toString(matchPair.charAt(0));
-    }
-
-    /**
-     * Parse the second column number in match pair.
-     *
-     * @param matchPair the match pair that is to be parsed
-     * @return the parsed second column number
-     */
-    protected String parseMatchNum(String matchPair) {
-        return matchPair.substring(1).trim();
     }
 }
