@@ -21,8 +21,10 @@ public class EssayQuestion extends Question {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayNote("Please give " + numResponses + " " + responseType + "(s).", true);
+        SurveyApp.out.displayQuestion(new String[]{
+                prompt,
+                "Please give " + numResponses + " " + responseType + "(s)."
+        });
     }
 
     @Override

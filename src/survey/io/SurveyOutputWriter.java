@@ -23,17 +23,25 @@ public interface SurveyOutputWriter {
 
     void displayMenuOptions(List<String> options);
 
+    void displayQuestion(String prompt);
+
+    void displayQuestion(String[] prompt);
+
+    void displayQuestion(String prompt, ChoiceList choiceList);
+
+    void displayQuestion(String[] prompt, ChoiceList choiceList);
+
+    void displayQuestion(String prompt, List<ChoiceList> choiceSet);
+
+    void displayQuestion(String[] prompt, List<ChoiceList> choiceSet);
+
     void displayQuestionPrompt(String prompt);
 
     void displayQuestionPrompt(String[] prompt);
 
     void displayQuestionChoiceList(ChoiceList choiceList);
 
-    void displayQuestionChoiceList(ChoiceList choiceList, boolean isInline);
-
     void displayQuestionChoiceSet(List<ChoiceList> choiceSet);
-
-    void displayQuestionChoiceSet(List<ChoiceList> choiceSet, boolean isInline);
 
     void displaySurveyName(String surveyName);
 

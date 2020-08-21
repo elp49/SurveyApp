@@ -201,4 +201,6 @@ public abstract class Question implements Serializable {
     }
 
     protected abstract String getValidResponse();
+
+    protected abstract boolean isValidResponse(String possibleResponse);
 }

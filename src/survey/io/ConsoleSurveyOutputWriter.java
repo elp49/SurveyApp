@@ -97,6 +97,34 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         }
     }
 
+    public void displayQuestion(String prompt) {
+        displayQuestionPrompt(prompt);
+    }
+
+    public void displayQuestion(String[] prompt) {
+        displayQuestionPrompt(prompt);
+    }
+
+    public void displayQuestion(String prompt, ChoiceList choiceList) {
+        displayQuestionPrompt(prompt);
+        displayQuestionChoiceList(choiceList);
+    }
+
+    public void displayQuestion(String[] prompt, ChoiceList choiceList) {
+        displayQuestionPrompt(prompt);
+        displayQuestionChoiceList(choiceList);
+    }
+
+    public void displayQuestion(String prompt, List<ChoiceList> choiceSet) {
+        displayQuestionPrompt(prompt);
+        displayQuestionChoiceSet(choiceSet);
+    }
+
+    public void displayQuestion(String[] prompt, List<ChoiceList> choiceSet) {
+        displayQuestionPrompt(prompt);
+        displayQuestionChoiceSet(choiceSet);
+    }
+
     public void displayQuestionPrompt(String prompt) {
         String ls = lineSeparator();
         println(ls + ls + prompt);
@@ -116,18 +144,15 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
     }
 
     public void displayQuestionChoiceList(ChoiceList choiceList) {
-        displayQuestionChoiceList(choiceList, false);
-    }
-
-    public void displayQuestionChoiceList(ChoiceList choiceList, boolean isInline) {
         int i;
         String choice;
         char choiceChar = 'A';
-        StringBuilder sb = new StringBuilder();
+
+        // Get line separator.
         String ls = lineSeparator();
 
-        // If not inline, then append line separator.
-        if (!isInline) sb.append(ls);
+        // Initialize string builder
+        StringBuilder sb = new StringBuilder();
 
         for (i = 0; i < choiceList.size(); i++) {
             // Get choice.
@@ -149,20 +174,19 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
     }
 
     public void displayQuestionChoiceSet(List<ChoiceList> choiceSet) {
-        displayQuestionChoiceSet(choiceSet, false);
-    }
-
-    public void displayQuestionChoiceSet(List<ChoiceList> choiceSet, boolean isInline) {
         int i, j;
         String choice;
         char choiceChar = 'A';
         int choiceNum = 1;
-        int size = getLargestChoiceListSize(choiceSet);
-        StringBuilder sb = new StringBuilder();
+
+        // Get line separator.
         String ls = lineSeparator();
 
-        // If not inline, then append line separator.
-        if (!isInline) sb.append(ls);
+        // Initialize string builder
+        StringBuilder sb = new StringBuilder();
+
+        // Get the size of the largest choice list.
+        int size = getLargestChoiceListSize(choiceSet);
 
         for (i = 0; i < size; i++) {
             for (j = 0; j < choiceSet.size(); j++) {

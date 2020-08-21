@@ -25,7 +25,7 @@ public class ShortAnswerQuestion extends EssayQuestion {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(new String[]{
+        SurveyApp.out.displayQuestion(new String[]{
                 prompt,
                 "Limit your " + responseType + "(s) to " + responseCharLimit + " characters.",
                 "Please give " + numResponses + " " + responseType + "(s)."

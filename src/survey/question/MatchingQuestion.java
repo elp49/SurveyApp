@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MatchingQuestion extends Question {
-    protected final String SEPARATOR = ":";
     protected final int numChoiceLists = 2;
     protected List<ChoiceList> choiceSet;
 
@@ -36,6 +35,12 @@ public class MatchingQuestion extends Question {
         return i != null && i > 1;
     }
 
+    /**
+     * Get a valid choice set containing a number of choice lists
+     * equivalent to numChoiceLists.
+     *
+     * @return a valid choice set
+     */
     private List<ChoiceList> getValidChoiceSet() {
         int i;
         ChoiceList choiceList;
@@ -54,6 +59,12 @@ public class MatchingQuestion extends Question {
         return result;
     }
 
+    /**
+     * Get a valid choice list containing a number of choices
+     * equivalent to numResponses.
+     *
+     * @return a valid choice list
+     */
     protected ChoiceList getValidChoiceList() {
         int i;
         String choice;
@@ -73,6 +84,11 @@ public class MatchingQuestion extends Question {
         return result;
     }
 
+    /**
+     * Read user input until a valid choice is provided.
+     *
+     * @return a valid choice
+     */
     protected String getValidChoice() {
         String choice;
         boolean isValidChoice;
@@ -85,19 +101,26 @@ public class MatchingQuestion extends Question {
             if (!(isValidChoice = isValidChoice(choice))) {
                 SurveyApp.displayInvalidInputMessage("choice");
             }
+
+            // If the choice is invalid, the isValidChoice will be false.
         } while (!isValidChoice);
 
         return choice;
     }
 
-    protected boolean isValidChoice(String s) {
-        return !Validation.isNullOrBlank(s);
+    /**
+     * Determine if the given choice is valid, null, or blank.
+     *
+     * @param choice the choice to be validated
+     * @return true if the choice is not null or blank, otherwise false
+     */
+    protected boolean isValidChoice(String choice) {
+        return !Validation.isNullOrBlank(choice);
     }
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayQuestionChoiceSet(choiceSet, true);
+        SurveyApp.out.displayQuestion(prompt, choiceSet);
     }
 
     @Override
@@ -107,141 +130,187 @@ public class MatchingQuestion extends Question {
         boolean isReturn = modifyPrompt();
 
         // Test return value.
-        if (!isReturn) modifyChoices();
+        if (!isReturn) modifyChoiceSet();
     }
 
-    protected boolean modifyChoices() {
-        int choiceListIndex, choiceIndex;
-        String newChoice, response;
-        String[] match;
-        boolean isReturn = false;
+    /**
+     * Determine if the user will modify a choice. If they will,
+     * then determine which choice is to modified and get and
+     * set the new choice.
+     *
+     * @return false if the user decides to return to the previous
+     * menu, otherwise true
+     */
+    protected boolean modifyChoiceSet() {
+        boolean isReturn, choiceWasModified;
 
         // Determine if user will modify question choices.
         String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
 
-        switch (choice) {
-            case ModifyQuestionMenu.YES:
-                /*// Display choice set.
-                SurveyApp.out.displayQuestionPrompt("Which choice do you want to modify?");
-                SurveyApp.out.displayQuestionChoiceSet(choiceSet, true);
+        // Test if the user chose to return to the previous menu.
+        if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
+            // Loop until user enters new valid choice.
+            do {
+                // Display choice set.
+                SurveyApp.out.displayQuestion(new String[]{
+                        "Which choice do you want to modify?",
+                        "Enter the character or number."
+                }, choiceSet);
 
-                // Get the choice to be modified.
-                response = getPossibleMatch();
+                // Get and set the choice to be modified.
+                choiceWasModified = modifyChoice();
 
-                // Split the choices.
-                match = splitMatch(response);
-
-                */
-
-                // Get index of choice in options list.
-                choiceListIndex = getChoiceListIndex();
-
-                // Get index of choice in choice list.
-                choiceIndex = getChoiceIndex(choiceListIndex);
-
-                // Get valid new question choice.
-                SurveyApp.out.displayMenuPrompt("Enter the new choice:");
-                newChoice = getValidChoice();
-
-                // Set the new choice in chosen choice list.
-                choiceSet.get(choiceListIndex).set(choiceIndex, newChoice);
-
-                break;
-
-            case ModifyQuestionMenu.RETURN:
-
-                isReturn = true;
-                break;
-
-            default:
-                break;
+                // If the user enters an impossible choice character or number,
+                // then choiceWasModified will be false.
+            } while (!choiceWasModified);
         }
 
         return isReturn;
     }
 
     /**
-     * Get the index of the choice list that the user will modify.
+     * Get the choice the user will modify and determine which choice list
+     * it is in. If the user enters a possible choice, then get and set
+     * the new choice.
      *
-     * @return the index of the choice list.
+     * @return true if the user enters a possible choice, otherwise false
      */
-    protected int getChoiceListIndex() {
-        int i;
-        String choice;
-        List<String> options = new ArrayList<>();
+    protected boolean modifyChoice() {
+        boolean isPossibleChoice;
 
-        // Create list of possible columns to be modified.
-        for (i = 1; i <= choiceSet.size(); i++)
-            options.add("Column #" + i);
+        // Get choice to be modified.
+        String response = SurveyApp.in.readQuestionResponse();
 
-        // Get choice list to be modified.
-        choice = SurveyApp.getUserMenuChoice("Which column of choices do you want to modify?", options);
+        // Determine if character or number choice.
+        if (isPossibleChoice = isPossibleChar(response))
+            modifyColumnOneChoice(response);
+        else if (isPossibleChoice = isPossibleNumber(response))
+            modifyColumnTwoChoice(response);
+        else
+            SurveyApp.out.displayNote(response + " is not a valid choice.");
 
-        // Return index of choice in options list.
-        return options.indexOf(choice);
+        return isPossibleChoice;
     }
 
     /**
-     * Get the index of the choice that the user will modify.
+     * Get and set the new column one choice.
      *
-     * @return the index of the choice.
+     * @param choiceChar the choice character
+     * @return the choice previously at the specified position
      */
-    protected int getChoiceIndex(int choiceListIndex) {
-        String choice;
-        List<String> choiceList;
+    protected String modifyColumnOneChoice(String choiceChar) {
+        // Get index of choice character.
+        int choiceIndex = getChoiceCharIndex(choiceChar);
 
-        // Get chosen choice list.
-        choiceList = choiceSet.get(choiceListIndex).getChoices();
+        // Get the new choice to be set.
+        String newChoice = getNewValidChoice();
 
-        // Get choice to be modified from chosen choice list.
-        choice = SurveyApp.getUserMenuChoice("Which choices do you want to modify in column #" + (choiceListIndex + 1) + "?", choiceList);
-
-        // Return index of choice in choice list.
-        return choiceList.indexOf(choice);
+        // Set the new choice.
+        return setChoice(newChoice, 0, choiceIndex);
     }
 
+    /**
+     * Get and set the new column two choice.
+     *
+     * @param choiceNum the choice number
+     * @return the choice previously at the specified position
+     */
+    protected String modifyColumnTwoChoice(String choiceNum) {
+        // Get index of choice number.
+        int choiceIndex = getChoiceNumIndex(choiceNum);
+
+        // Get the new choice to be set.
+        String newChoice = getNewValidChoice();
+
+        // Set the new choice.
+        return setChoice(newChoice, 1, choiceIndex);
+    }
+
+    /**
+     * Get a new valid choice.
+     *
+     * @return the new valid choice
+     */
+    protected String getNewValidChoice() {
+        String choice;
+
+        // Get valid new question choice.
+        SurveyApp.out.displayMenuPrompt("Enter the new choice:");
+        choice = getValidChoice();
+
+        return choice;
+    }
+
+    /**
+     * Set the choice at the specified position.
+     *
+     * @param choiceListIndex the index of the choice list in the choice set
+     * @param choiceIndex     the index of the choice in the choice list
+     * @return the choice previously at the specified position
+     */
+    protected String setChoice(String choice, int choiceListIndex, int choiceIndex) {
+        return choiceSet.get(choiceListIndex).set(choiceIndex, choice);
+    }
+
+    /**
+     * Read possible matches from user input and test if either choice
+     * in the match has been entered already.
+     *
+     * @return a valid match
+     */
     public String getValidResponse() {
         boolean isValidMatch;
-        String newMatch;
+        String validMatch;
 
         do {
             // Get a possible match.
-            newMatch = getPossibleMatch();
+            validMatch = getPossibleMatch();
 
-            // Test match for null.
-            isValidMatch = isValidMatch(newMatch);
+            // Test if choices have been entered already.
+            isValidMatch = isValidResponse(validMatch);
 
             // If user enters an impossible match or if one of the choices has
             // already been entered, then isValidMatch will be false.
         } while (!isValidMatch);
 
-        return newMatch;
+        return validMatch;
     }
 
+    /**
+     * Read user input and test if it is a possible match.
+     * For it to be possible, both the entered character and number
+     * must be within range of the available choices.
+     *
+     * @return a possible match
+     */
     protected String getPossibleMatch() {
-        boolean isValid;
+        boolean isPossibleMatch;
         String response;
-        String[] match;
+        String[] possibleMatch;
 
+        // Loop until user enters a possible match.
         do {
-            // Get user matching response.
-            response = SurveyApp.in.readQuestionResponse();
+            // Get user's match.
+            response = SurveyApp.in.readQuestionResponse().toUpperCase();
 
             // Test for null or blank response.
-            if (!(isValid = !Validation.isNullOrBlank(response))) {
-                SurveyApp.displayInvalidInputMessage(responseType);
+            if (!(isPossibleMatch = !Validation.isNullOrBlank(response))) {
+                SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
             } else {
                 // Split the match.
-                match = splitMatch(response);
+                possibleMatch = splitMatch(response);
 
                 // Test choice character index is in range of choice list.
-                if (!(isValid = isPossibleChar(match[0]))) {
-                    SurveyApp.out.displayNote(match[0] + " is not an available choice.");
-                } else if (!(isValid = isPossibleNumber(match[1]))) {
-                    SurveyApp.out.displayNote(match[1] + " is not an available choice.");
+                if (!(isPossibleMatch = isPossibleChar(possibleMatch[0]))) {
+                    SurveyApp.out.displayNote(possibleMatch[0] + " is not a valid choice.");
+                } else if (!(isPossibleMatch = isPossibleNumber(possibleMatch[1]))) {
+                    SurveyApp.out.displayNote(possibleMatch[1] + " is not a valid choice.");
                 }
             }
-        } while (!isValid);
+
+            // If user response is null or blank or either the choice or number
+            // are invalid, then isPossibleMatch will be false.
+        } while (!isPossibleMatch);
 
         return response;
     }
@@ -285,16 +354,6 @@ public class MatchingQuestion extends Question {
     }
 
     /**
-     * Parse the choice character index.
-     *
-     * @param choiceChar the choice character index to be parsed
-     * @return the parsed choice character index or null
-     */
-    protected int getChoiceCharIndex(String choiceChar) {
-        return choiceChar.toUpperCase().charAt(0) - 65;
-    }
-
-    /**
      * Determine if the number is a possible choice given the choice set.
      *
      * @param n the number to be tested
@@ -311,6 +370,16 @@ public class MatchingQuestion extends Question {
             isPossibleNumber = Validation.isInRange(num, 1, choiceSet.get(1).size());
 
         return isPossibleNumber;
+    }
+
+    /**
+     * Parse the choice character index.
+     *
+     * @param choiceChar the choice character index to be parsed
+     * @return the parsed choice character index or null
+     */
+    protected int getChoiceCharIndex(String choiceChar) {
+        return choiceChar.charAt(0) - 65;
     }
 
     /**
@@ -332,32 +401,45 @@ public class MatchingQuestion extends Question {
     }
 
     /**
-     * Determine if the possible match contains valid a choices that have not
-     * yet been chosen.
+     * Determine if either choice within the possible match have already been chosen.
      *
      * @param possibleMatch the possible match
      * @return true if neither of the choices in the possible match have been
-     * chosen yet, otherwise false
+     *          chosen yet, otherwise false
      */
-    protected boolean isValidMatch(String possibleMatch) {
+    @Override
+    protected boolean isValidResponse(String possibleMatch) {
         int i;
         boolean isValidMatch;
-        String[] existingMatch;
+        String[] matchArray, existingMatch;
 
-        // Split the possible match.
-        String[] matchArray = splitMatch(possibleMatch);
+        // Test possible match for null or blank.
+        if (isValidMatch = !Validation.isNullOrBlank(possibleMatch)) {
+            // Split the possible match.
+            matchArray = splitMatch(possibleMatch);
 
-        if (isValidMatch = (matchArray != null)) {
-            // Loop through existing user matches.
-            for (String s : questionResponse.getResponseList()) {
-                // Split the existing user match.
-                existingMatch = splitMatch(s);
+            // Test match array for null.
+            if (isValidMatch = (matchArray != null)) {
+                // Loop through existing user matches.
+                for (String s : questionResponse.getResponseList()) {
+                    // Split the existing user match.
+                    existingMatch = splitMatch(s);
 
-                // Test if either choice from the new match has already been recorded.
-                for (i = 0; i < matchArray.length; i++)
-                    if (!(isValidMatch = !matchArray[i].equals(existingMatch[i]))) break;
+                    // Test if either choice from the new match has already been recorded.
+                    for (i = 0; i < matchArray.length; i++)
+                        if (!(isValidMatch = !matchArray[i].equals(existingMatch[i]))) {
+                            SurveyApp.out.displayNote("You've already entered choice " + matchArray[i]);
+                            break;
+                        }
+
+                    // If one of the choices have already been entered,
+                    // then isValidMatch will be false.
+                    if (!isValidMatch)
+                        break;
+                }
             }
         }
+
 
         return isValidMatch;
     }

@@ -28,8 +28,7 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(prompt);
-        SurveyApp.out.displayQuestionChoiceList(choiceList, true);
+        SurveyApp.out.displayQuestion(prompt, choiceList);
     }
 
     @Override

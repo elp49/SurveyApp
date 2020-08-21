@@ -29,7 +29,7 @@ public class ValidDateQuestion extends ShortAnswerQuestion {
 
     @Override
     public void display() {
-        SurveyApp.out.displayQuestionPrompt(new String[]{
+        SurveyApp.out.displayQuestion(new String[]{
                 prompt,
                 "A date should be entered in the following format: " + DATE_FORMAT,
                 "Please give " + numResponses + " date(s)."
