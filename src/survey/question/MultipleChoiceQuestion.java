@@ -22,61 +22,22 @@ public class MultipleChoiceQuestion extends Question {
         prompt = getValidPrompt();
 
         // Get valid number of choices.
-        numChoices = getValidNumChoices();
+        numChoices = getNumChoices();
 
         // Get valid choice list.
         choiceList = getValidChoiceList();
 
         // Get valid number of responses.
-        numResponses = getValidNumResponses(numChoices);
-    }
-
-    protected ChoiceList getValidChoiceList() {
-        int i;
-        String choice;
-        ChoiceList result = new ChoiceList();
-
-        for (i = 1; i <= numChoices; i++) {
-            // Display question choice prompt.
-            SurveyApp.out.displayMenuPrompt("Enter choice " + i + ").");
-
-            // Get valid choice.
-            choice = getValidChoice();
-
-            // Add choice to choice list.
-            result.add(choice);
-        }
-
-        return result;
+        numResponses = getValidNumResponses();
     }
 
     /**
-     * Read user input until a valid choice string is given.
+     * Get a valid number of choices. A valid number of choices is between
+     * 1 and 26 inclusive.
      *
-     * @return the valid choice string.
+     * @return the valid number of choices
      */
-    protected String getValidChoice() {
-        String choice;
-        boolean isValidChoice;
-
-        do {
-            // Record choice.
-            choice = SurveyApp.in.readQuestionChoice();
-
-            // Check if valid choice.
-            if (!(isValidChoice = isValidChoice(choice))) {
-                SurveyApp.displayInvalidInputMessage("choice");
-            }
-        } while (!isValidChoice);
-
-        return choice;
-    }
-
-    protected boolean isValidChoice(String s) {
-        return !Validation.isNullOrBlank(s);
-    }
-
-    protected int getValidNumChoices() {
+    protected int getNumChoices() {
         Integer numChoices;
         boolean isValidNumChoices;
 
@@ -94,16 +55,73 @@ public class MultipleChoiceQuestion extends Question {
         return numChoices;
     }
 
+    /**
+     * Determine if the given number is a valid number of choices.
+     * Valid numbers are between 1 and 26 inclusive.
+     *
+     * @param i the number of choices
+     * @return true if it is a valid number of choices, otherwise false
+     */
     protected boolean isValidNumChoices(Integer i) {
         return i != null && i > 1 && i <= 26;
     }
 
-    @Override
-    protected int getValidNumResponses() {
-        return getValidNumResponses(numChoices);
+    protected ChoiceList getValidChoiceList() {
+        int i;
+        String choice;
+        char choiceChar = 'A';
+        ChoiceList result = new ChoiceList();
+
+        for (i = 1; i <= numChoices; i++) {
+            // Display question choice prompt.
+            SurveyApp.out.displayMenuPrompt("Enter choice " + choiceChar + ").");
+
+            // Get valid choice.
+            choice = getValidChoiceText();
+
+            // Add choice to choice list.
+            result.add(choice);
+
+            choiceChar++;
+        }
+
+        return result;
     }
 
-    protected int getValidNumResponses(int numChoices) {
+    /**
+     * Read user input until a valid choice is given.
+     *
+     * @return a valid choice
+     */
+    protected String getValidChoiceText() {
+        String choice;
+        boolean isValidChoiceText;
+
+        do {
+            // Record choice.
+            choice = SurveyApp.in.readQuestionChoice();
+
+            // Check if valid choice.
+            if (!(isValidChoiceText = isValidChoiceText(choice))) {
+                SurveyApp.displayInvalidInputMessage("choice");
+            }
+        } while (!isValidChoiceText);
+
+        return choice;
+    }
+
+    /**
+     * Determine if a choice is valid. A valid choice is not null or blank.
+     *
+     * @param s the choice
+     * @return true if the choice is valid, otherwise false
+     */
+    protected boolean isValidChoiceText(String s) {
+        return !Validation.isNullOrBlank(s);
+    }
+
+    @Override
+    protected int getValidNumResponses() {
         Integer numResponses;
         boolean isValidNumResponses;
 
@@ -113,7 +131,7 @@ public class MultipleChoiceQuestion extends Question {
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
             // Check if valid number of responses.
-            if (!(isValidNumResponses = isValidNumResponses(numResponses, numChoices))) {
+            if (!(isValidNumResponses = isValidNumResponses(numResponses))) {
                 SurveyApp.displayInvalidInputMessage("number");
             }
         } while (!isValidNumResponses);
@@ -126,14 +144,9 @@ public class MultipleChoiceQuestion extends Question {
         return i != null && i > 0 && i < numChoices;
     }
 
-    protected boolean isValidNumResponses(Integer i, Integer numChoices) {
-        return i != null && i > 0 && i < numChoices;
-    }
-
     @Override
     public void display() {
-        SurveyApp.out.displayQuestion(new String[]{
-                prompt,
+        SurveyApp.out.displayQuestion(new String[]{prompt,
                 "Please give " + numResponses + " choice(s)."
         }, choiceList);
     }
@@ -144,44 +157,16 @@ public class MultipleChoiceQuestion extends Question {
         // then user chose to return to the previous menu.
         boolean isReturn = modifyPrompt();
 
-        // Test return value.
-        if (!isReturn) isReturn = modifyChoices();
+        // Test is user chose to return to previous menu.
+        if (!isReturn) {
+            // Modify a question choice.
+            isReturn = modifyChoice();
 
-        // Test return value.
-        if (!isReturn) modifyNumResponses();
-    }
-
-    @Override
-    protected boolean modifyNumResponses() {
-        Integer newNumResponses;
-        boolean isReturn, isValidNumResponses;
-
-        // Get user choice.
-        String choice = SurveyApp.getUserMenuChoice(new String[]{
-                ModifyQuestionMenu.MODIFY_NUM_RESPONSES,
-                "The current number of allowed " + responseType + "s is: " + numResponses
-        }, ModifyQuestionMenu.OPTIONS);
-
-        // Test if user chose to return to previous menu.
-        if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
-            // Loop until user enters valid new number of responses.
-            do {
-                // Record new number of question responses.
-                SurveyApp.out.displayMenuPrompt("Enter a new number of allowed " + responseType + "s.");
-                newNumResponses = SurveyApp.in.readQuestionChoiceCount();
-
-                // Check if valid new number of responses.
-                if (isValidNumResponses = isValidNumResponses(newNumResponses, choiceList.size()))
-                    numResponses = newNumResponses;
-                else
-                    SurveyApp.displayInvalidInputMessage("number");
-
-                // If user enters an invalid new number of response,
-                // then isValidNumResponses will be false.
-            } while (!isValidNumResponses);
+            // Test return value.
+            if (!isReturn)
+                modifyNumResponses();
         }
 
-        return isReturn;
     }
 
     /**
@@ -190,177 +175,83 @@ public class MultipleChoiceQuestion extends Question {
      *
      * @return true if the user chose to return to the previous menu, otherwise false.
      */
-    protected boolean modifyChoices() {
+    protected boolean modifyChoice() {
         int choiceIndex;
-        String newChoice;
+        String choiceChar, newChoice;
         boolean isReturn;
 
         // Determine if user will modify question choices.
-        String choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
+        String menuChoice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
 
         // Test if user chose to return to previous menu.
-        if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
+        if (!(isReturn = menuChoice.equals(ModifyQuestionMenu.RETURN))) {
             // Display choice list.
-            SurveyApp.out.displayQuestion("Which choice do you want to modify?", choiceList);
+            SurveyApp.out.displayQuestion(new String[]{
+                    "Which choice do you want to modify?",
+                    "Enter the character."
+            }, choiceList);
 
-            // Get index of choice in choice list to be modified.
-            choiceIndex = getValidUserChoiceIndex();
+            // Get choice character of one of the possible choices to be modified.
+            choiceChar = readPossibleQuestionResponse();
+
+            // Get index of the choice.
+            choiceIndex = getChoiceCharIndex(choiceChar.charAt(0));
 
             // Get valid new question choice.
-            SurveyApp.out.displayMenuPrompt("Enter the new choice:");
-            newChoice = getValidChoice();
+            SurveyApp.out.displayMenuPrompt("Enter the new choice " + choiceChar + ").");
+            newChoice = getValidChoiceText();
 
             // Update choice list with modified choice.
-            choiceList.set(choiceIndex, newChoice);
+            setChoice(choiceIndex, newChoice);
         }
 
         return isReturn;
     }
 
-    /**
-     * Get a valid user choice from choice list.
-     *
-     * @return the valid user choice.
-     */
-    protected int getValidUserChoiceIndex() {
-        String choiceChar;
-        int choiceIndex;
-        int A = 65;
+    @Override
+    public String readPossibleQuestionResponse() {
+        String response;
+        boolean isPossibleResponse;
 
         do {
-            // Get a valid choice character.
-            choiceChar = getValidChoiceCharacter();
-        } while (Validation.isNullOrBlank(choiceChar));
+            // Get user choice.
+            response = SurveyApp.in.readQuestionResponse().toUpperCase();
 
-        // Convert choice character to choice index.
-        choiceIndex = choiceChar.charAt(0) - A;
-
-        // Return chosen choice index.
-        return choiceIndex;
-    }
-
-    /**
-     * Read user response and determine if it is a valid choice character.
-     * If it is not, then report why.
-     *
-     * @return the valid choice character or null if it is invalid
-     */
-    protected String getValidChoiceCharacter() {
-        String result;
-        int choiceIndex;
-        int A = 65;
-
-        // Record user choice character.
-        String choiceChar = SurveyApp.in.readQuestionResponse().toUpperCase();
-
-        // Test for null or blank response.
-        if (!(isValid = !Validation.isNullOrBlank(choiceChar))) {
-            SurveyApp.displayInvalidInputMessage(responseType);
-        }
-
-        // Test for null or blank string.
-        if (!Validation.isNullOrBlank(choiceChar)) {
-            SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
-            return null;
-        }
-
-        // Test character is alphabetic letter.
-        if (!Validation.isAlphabeticLetter(choiceChar)) {
-            SurveyApp.out.displayNote("Your choice should be a letter.");
-            return null;
-        }
-
-        // Test choice is only one character.
-        else if (choiceChar.length() != 1) {
-            SurveyApp.out.displayNote("Please enter one character at a time.");
-            return null;
-        }
-
-        // Get uppercase character.
-        result = choiceChar.toUpperCase();
-
-        // Convert choice character to choice index.
-        choiceIndex = result.charAt(0) - A;
-
-        // Test choice index is in range of choice list.
-        if (!Validation.isInRange(choiceIndex, 0, choiceList.size())) {
-            SurveyApp.out.displayNote("Please enter one of the available choices.");
-            return null;
-        }
-
-        return result;
-    }
-
-    /**
-     * Read possible choices from user input and test if the choice
-     * has been entered already.
-     *
-     * @return a valid choice
-     */
-    protected String getValidResponse() {
-        boolean isValidChoice;
-        String validChoice;
-
-        do {
-            // Get a possible choice.
-            validChoice = getPossibleChoice();
-
-            // Test if choice has been entered already.
-            isValidChoice = isValidResponse(validChoice);
-
-            // If user enters an impossible choice or if the choice has
-            // already been entered, then isValidChoice will be false.
-        } while (!isValidChoice);
-
-        return validChoice;
-    }
-
-    /**
-     * Read user input and test if it is a possible choice.
-     * For it to be possible, the entered character must be
-     * within range of the available choices.
-     *
-     * @return a possible choice
-     */
-    protected String getPossibleChoice() {
-        boolean isPossibleChoice;
-        String possibleChoice;
-
-        // Loop until user enters a possible match.
-        do {
-            // Get user's choice.
-            possibleChoice = SurveyApp.in.readQuestionResponse().toUpperCase();
-
-            // Test for null or blank response.
-            if (!(isPossibleChoice = !Validation.isNullOrBlank(possibleChoice))) {
+            // Test for null or blank choice.
+            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
-            } else if (!(isPossibleChoice = isPossibleChar(possibleChoice))) {
-                SurveyApp.out.displayNote(possibleChoice + " is not a valid choice.");
-            }
 
-            // If user response is null or blank or the choice is invalid,
-            // then isPossibleChoice will be false.
-        } while (!isPossibleChoice);
+                // Test if response is more than a single character
+            else if (!(isPossibleResponse = (response.length() == 1)))
+                SurveyApp.out.displayNote("You must enter one character at a time.");
 
-        return possibleChoice;
+                // Test if choice is a possible choice given the choice list.
+            else if (!(isPossibleResponse = isPossibleChoiceChar(response.charAt(0))))
+                SurveyApp.out.displayNote(response + " is not a valid " + responseType);
+
+            // If the user enters an impossible choice,
+            // then isPossibleResponse will be false.
+        } while (!isPossibleResponse);
+
+        return response;
     }
 
     /**
-     * Determine if the character is a possible choice given the choice list.
+     * Determine if the choice character is possible given the choice list.
      *
-     * @param c the character to be tested
-     * @return true if the character is a possible choice, otherwise false
+     * @param choiceChar the choice character to be tested
+     * @return true if the choice is a possible choice, otherwise false
      */
-    protected boolean isPossibleChar(String c) {
-        boolean isPossibleChar;
+    protected boolean isPossibleChoiceChar(char choiceChar) {
+        boolean isPossibleChoiceChar;
 
         // Get choice character index.
-        int choiceIndex = getChoiceCharIndex(c);
+        int choiceIndex = getChoiceCharIndex(choiceChar);
 
         // Test choice character index is in range of possible choices.
-        isPossibleChar = Validation.isInRange(choiceIndex, 0, choiceList.size() - 1);
+        isPossibleChoiceChar = Validation.isInRange(choiceIndex, 0, choiceList.size() - 1);
 
-        return isPossibleChar;
+        return isPossibleChoiceChar;
     }
 
     /**
@@ -369,32 +260,66 @@ public class MultipleChoiceQuestion extends Question {
      * @param choiceChar the choice character index to be parsed
      * @return the parsed choice character index or null
      */
-    protected int getChoiceCharIndex(String choiceChar) {
-        return choiceChar.charAt(0) - 65;
+    protected int getChoiceCharIndex(char choiceChar) {
+        return choiceChar - 65;
     }
 
     /**
-     * Determine if the possible choice has already been chosen.
+     * Set the choice at the specified position.
      *
-     * @param possibleChoice the possible choice
-     * @return true if the choice has not been chosen yet, otherwise false
+     * @param choiceIndex the index of the choice in the choice list
+     * @param choice      the new choice
+     * @return the choice previously at the specified position
      */
-    @Override
-    protected boolean isValidResponse(String possibleChoice) {
-        boolean isValidChoice;
+    protected String setChoice(int choiceIndex, String choice) {
+        return choiceList.set(choiceIndex, choice);
+    }
 
-        // Test possible match for null or blank.
-        if (isValidChoice = !Validation.isNullOrBlank(possibleChoice)) {
-            // Loop through existing user matches.
-            for (String existingChoice : questionResponse.getResponseList()) {
-                // Test if choice has already been recorded.
-                if (!(isValidChoice = !possibleChoice.equals(existingChoice))) {
-                    SurveyApp.out.displayNote("You've already entered choice " + possibleChoice);
-                    break;
-                }
+    @Override
+    protected void modifyNumResponses() {
+        Integer newNumResponses;
+        boolean isValidNumResponses;
+
+        // Get user choice.
+        String choice = SurveyApp.getUserMenuChoice(new String[]{
+                ModifyQuestionMenu.MODIFY_NUM_RESPONSES,
+                "The current number of allowed " + responseType + "s is: " + numResponses
+        }, ModifyQuestionMenu.OPTIONS);
+
+        // Test if user chose to return to previous menu.
+        if (!choice.equals(ModifyQuestionMenu.RETURN)) {
+            // Loop until user enters valid new number of responses.
+            do {
+                // Record new number of question responses.
+                SurveyApp.out.displayMenuPrompt("Enter a new number of allowed " + responseType + "s.");
+                newNumResponses = SurveyApp.in.readQuestionChoiceCount();
+
+                // Test if new number of responses is invalid.
+                if (!(isValidNumResponses = isValidNumResponses(newNumResponses)))
+                    SurveyApp.displayInvalidInputMessage("number");
+
+                // If user enters an invalid new number of response,
+                // then isValidNumResponses will be false.
+            } while (!isValidNumResponses);
+
+            // Set the new number of responses.
+            numResponses = newNumResponses;
+        }
+    }
+
+    @Override
+    protected boolean isValidResponse(String response) {
+        boolean isValidResponse = true;
+
+        // Loop through existing user matches.
+        for (String existingChoice : questionResponse.getResponseList()) {
+            // Test if choice has already been recorded.
+            if (!(isValidResponse = !response.equals(existingChoice))) {
+                SurveyApp.out.displayNote("You've already entered choice " + response);
+                break;
             }
         }
 
-        return isValidChoice;
+        return isValidResponse;
     }
 }

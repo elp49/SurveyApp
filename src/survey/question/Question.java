@@ -35,18 +35,20 @@ public abstract class Question implements Serializable {
 
     protected String getValidPrompt() {
         String prompt;
-        boolean isNullOrBlank;
+        boolean isValidPrompt;
 
         do {
             // Record question prompt.
             SurveyApp.out.displayMenuPrompt("Enter the prompt for your " + questionType + " question:");
             prompt = SurveyApp.in.readQuestionPrompt();
 
-            // Check if valid prompt.
-            if (isNullOrBlank = Validation.isNullOrBlank(prompt)) {
+            // Test if prompt is invalid.
+            if (!(isValidPrompt = !Validation.isNullOrBlank(prompt)))
                 SurveyApp.displayInvalidInputMessage("prompt");
-            }
-        } while (isNullOrBlank);
+
+            // If the prompt is invalid,
+            // then isValidPrompt will be false.
+        } while (isValidPrompt);
 
         return prompt;
     }
@@ -60,10 +62,12 @@ public abstract class Question implements Serializable {
             SurveyApp.out.displayMenuPrompt("Enter the number of " + responseType + "s for your " + questionType + " question.");
             numResponses = SurveyApp.in.readQuestionChoiceCount();
 
-            // Check if valid number of responses.
-            if (!(isValidNumResponses = isValidNumResponses(numResponses))) {
+            // Test number of responses is invalid.
+            if (!(isValidNumResponses = isValidNumResponses(numResponses)))
                 SurveyApp.displayInvalidInputMessage("number");
-            }
+
+            // If the number of responses is invalid,
+            // then isValidNumResponses will be false.
         } while (!isValidNumResponses);
 
         return numResponses;
@@ -85,8 +89,7 @@ public abstract class Question implements Serializable {
      */
     protected boolean modifyPrompt() {
         String choice, newPrompt;
-        boolean isNullOrBlank;
-        boolean isReturn = false;
+        boolean isReturn, isValidPrompt;
 
         // Display the current prompt.
         SurveyApp.out.displayMenuPrompt(prompt);
@@ -94,45 +97,36 @@ public abstract class Question implements Serializable {
         // Get user choice.
         choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_PROMPT, ModifyQuestionMenu.OPTIONS);
 
-        switch (choice) {
-            case ModifyQuestionMenu.YES:
+        // Test if user chose to return to previous menu.
+        if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
+            // Loop until user enters valid new prompt.
+            do {
+                // Display the current prompt.
+                SurveyApp.out.displayMenuPrompt(prompt);
 
-                // Loop until user enters valid new prompt.
-                do {
-                    // Display the current prompt.
-                    SurveyApp.out.displayMenuPrompt(prompt);
+                // Record question prompt.
+                SurveyApp.out.displayMenuPrompt("Enter a new prompt:");
+                newPrompt = SurveyApp.in.readQuestionPrompt();
 
-                    // Record question prompt.
-                    SurveyApp.out.displayMenuPrompt("Enter a new prompt:");
-                    newPrompt = SurveyApp.in.readQuestionPrompt();
+                // Test if new prompt is invalid.
+                if (!(isValidPrompt = !Validation.isNullOrBlank(newPrompt)))
+                    SurveyApp.displayInvalidInputMessage("prompt");
 
-                    // Test if valid prompt.
-                    if (!(isNullOrBlank = Validation.isNullOrBlank(newPrompt)))
-                        prompt = newPrompt;
-                    else
-                        SurveyApp.displayInvalidInputMessage("prompt");
+                // If the new prompt is invalid,
+                // then isValidPrompt will be false.
+            } while (!isValidPrompt);
 
-                } while (isNullOrBlank);
-
-                break;
-
-            case ModifyQuestionMenu.RETURN:
-
-                isReturn = true;
-                break;
-
-            default:
-                break;
+            // Set the new prompt.
+            prompt = newPrompt;
         }
 
         return isReturn;
     }
 
-    protected boolean modifyNumResponses() {
+    protected void modifyNumResponses() {
         String choice;
         Integer newNumResponses;
         boolean isValidNumResponses;
-        boolean isReturn = false;
 
         // Display the current prompt.
         SurveyApp.out.displayMenuPrompt("The current number of " + responseType + " is: " + numResponses);
@@ -140,42 +134,33 @@ public abstract class Question implements Serializable {
         // Get user choice.
         choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_NUM_RESPONSES, ModifyQuestionMenu.OPTIONS);
 
-        switch (choice) {
-            case ModifyQuestionMenu.YES:
+        // Test if user chose to return to previous menu.
+        if (!choice.equals(ModifyQuestionMenu.RETURN)) {
+            // Loop until user enters valid new number of responses.
+            do {
+                // Record new number of question responses.
+                SurveyApp.out.displayMenuPrompt("Enter a new number of " + responseType + ":");
+                newNumResponses = SurveyApp.in.readQuestionChoiceCount();
 
-                // Loop until user enters valid new number of responses.
-                do {
-                    // Record new number of question responses.
-                    SurveyApp.out.displayMenuPrompt("Enter a new number of " + responseType + ":");
-                    newNumResponses = SurveyApp.in.readQuestionChoiceCount();
+                // Test new number of responses is invalid.
+                if (!(isValidNumResponses = isValidNumResponses(newNumResponses)))
+                    SurveyApp.displayInvalidInputMessage("number");
 
-                    // Check if valid new number of responses.
-                    if (!(isValidNumResponses = isValidNumResponses(newNumResponses))) {
-                        SurveyApp.displayInvalidInputMessage("number");
-                    } else {
-                        // Set the prompt.
-                        numResponses = newNumResponses;
-                    }
-                } while (!isValidNumResponses);
+                // If the new number of responses is invalid,
+                // then isValidNumResponses will be false.
+            } while (!isValidNumResponses);
 
-                break;
-
-            case ModifyQuestionMenu.RETURN:
-
-                isReturn = true;
-                break;
-
-            default:
-                break;
+            // Set the number of responses.
+            numResponses = newNumResponses;
         }
-
-        return isReturn;
     }
 
     /**
-     * Read user input until a valid question response is given.
+     * Read the question response from user input. Some question responses
+     * will contain a multiple number of responses. Use these responses to
+     * create a question response object.
      *
-     * @return the valid question response
+     * @return the question response object
      */
     public QuestionResponse readQuestionResponse() {
         int i;
@@ -185,9 +170,11 @@ public abstract class Question implements Serializable {
         // Loop until user gives valid response(s).
         for (i = 0; i < numResponses; i++) {
             do {
-                // Get a valid question response.
-                response = getValidResponse();
-            } while (Validation.isNullOrBlank(response));
+                // Record user response.
+                response = readPossibleQuestionResponse();
+
+                // Test if valid response.
+            } while (!isValidResponse(response));
 
             // Add response string to question response.
             questionResponse.add(response);
@@ -200,7 +187,18 @@ public abstract class Question implements Serializable {
         return qr;
     }
 
-    protected abstract String getValidResponse();
+    /**
+     * Read a possible question response.
+     *
+     * @return a possible choice
+     */
+    protected abstract String readPossibleQuestionResponse();
 
-    protected abstract boolean isValidResponse(String possibleResponse);
+    /**
+     * Determine if the provided question response is valid.
+     *
+     * @param response the question response
+     * @return true if the question response is valid, otherwise false
+     */
+    protected abstract boolean isValidResponse(String response);
 }

@@ -32,27 +32,27 @@ public class ShortAnswerQuestion extends EssayQuestion {
         });
     }
 
-    /**
-     * Determines if the short answer is valid. If it is invalid, report why.
-     *
-     * @return the response string
-     */
-    protected String getValidResponse() {
-        // Record user response.
-        String response = SurveyApp.in.readQuestionResponse();
+    @Override
+    protected String readPossibleQuestionResponse() {
+        boolean isPossibleResponse;
+        String response;
 
-        // Test for null or blank string.
-        if (!Validation.isNullOrBlank(response))
-            SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
+        do {
+            // Get question response.
+            response = SurveyApp.in.readQuestionResponse();
 
-            // Test for response length within character limit.
-        else if (!(response.length() <= responseCharLimit)) {
-            SurveyApp.out.displayNote("Your " + responseType + " of " + response.length()
-                    + " characters exceeds the limit of " + responseCharLimit + ".");
+            // Test for null or blank string.
+            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
+                SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-            // Clean up invalid response.
-            response = null;
-        }
+                // Test for response length within character limit.
+            else if (!(isPossibleResponse = response.length() <= responseCharLimit))
+                SurveyApp.out.displayNote("Your " + responseType + " of " + response.length()
+                        + " characters exceeds the limit of " + responseCharLimit + ".");
+
+            // If the user enters an impossible question response,
+            // then isPossibleResponse will be false.
+        } while (!isPossibleResponse);
 
         return response;
     }

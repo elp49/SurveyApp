@@ -37,19 +37,28 @@ public class EssayQuestion extends Question {
         if (!isReturn) modifyNumResponses();
     }
 
-    /**
-     * Determines if the essay response is valid. If it is invalid, report why.
-     *
-     * @return the response string
-     */
-    protected String getValidResponse() {
-        // Record user response.
-        String response = SurveyApp.in.readQuestionResponse();
+    @Override
+    protected String readPossibleQuestionResponse() {
+        boolean isPossibleResponse;
+        String response;
 
-        // Test for null or blank string.
-        if (!Validation.isNullOrBlank(response))
-            SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
+        do {
+            // Get question response.
+            response = SurveyApp.in.readQuestionResponse();
+
+            // Test for null or blank string.
+            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
+                SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
+
+            // If the user enters an impossible question response,
+            // then isPossibleResponse will be false.
+        } while (!isPossibleResponse);
 
         return response;
+    }
+
+    @Override
+    protected boolean isValidResponse(String response) {
+        return true;
     }
 }

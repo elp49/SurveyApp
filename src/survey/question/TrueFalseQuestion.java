@@ -36,40 +36,4 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
         // Modify the question prompt.
         modifyPrompt();
     }
-
-    /*@Override
-    protected List<String> getPossibleChoiceCharacters() {
-        char choiceCharUpper = 'A';
-        char choiceCharLower = 'a';
-        List<String> result = new ArrayList<>();
-
-        // Create list of possible choice characters that could be entered.
-        for (String s : choiceList.getChoices()) {
-            // Add uppercase and lowercase choice characters to options list.
-            result.add(Character.toString(choiceCharUpper));
-            result.add(Character.toString(choiceCharLower));
-
-            choiceCharUpper++;
-            choiceCharLower++;
-        }
-
-        return result;
-    }*/
-
-    /*@Override
-    public List<String> getValidResponseList() {
-        int choiceIndex, i;
-        List<String> responseList = new ArrayList<>();
-
-        // Loop until user gives valid choice(s).
-        for (i = 0; i < numResponses; i++) {
-            // Get index of choice in choice list.
-            choiceIndex = getValidUserChoiceIndex();
-
-            // Add choice to response list.
-            responseList.add(choiceList.get(choiceIndex));
-        }
-
-        return responseList;
-    }*/
 }
