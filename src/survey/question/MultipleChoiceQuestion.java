@@ -166,7 +166,6 @@ public class MultipleChoiceQuestion extends Question {
             if (!isReturn)
                 modifyNumResponses();
         }
-
     }
 
     /**
@@ -178,31 +177,39 @@ public class MultipleChoiceQuestion extends Question {
     protected boolean modifyChoice() {
         int choiceIndex;
         String choiceChar, newChoice;
-        boolean isReturn;
+        boolean isReturn = false;
 
-        // Determine if user will modify question choices.
-        String menuChoice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
+        // Get user choice.
+        switch (SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS)) {
+            // Test if user chose to modify choice.
+            case ModifyQuestionMenu.YES:
+                // Display choice list.
+                SurveyApp.out.displayQuestion(new String[]{
+                        "Which choice do you want to modify?",
+                        "Enter the character."
+                }, choiceList);
 
-        // Test if user chose to return to previous menu.
-        if (!(isReturn = menuChoice.equals(ModifyQuestionMenu.RETURN))) {
-            // Display choice list.
-            SurveyApp.out.displayQuestion(new String[]{
-                    "Which choice do you want to modify?",
-                    "Enter the character."
-            }, choiceList);
+                // Get choice character of one of the possible choices to be modified.
+                choiceChar = readPossibleQuestionResponse();
 
-            // Get choice character of one of the possible choices to be modified.
-            choiceChar = readPossibleQuestionResponse();
+                // Get index of the choice.
+                choiceIndex = getChoiceCharIndex(choiceChar.charAt(0));
 
-            // Get index of the choice.
-            choiceIndex = getChoiceCharIndex(choiceChar.charAt(0));
+                // Get valid new question choice.
+                SurveyApp.out.displayMenuPrompt("Enter the new choice " + choiceChar + ").");
+                newChoice = getValidChoiceText();
 
-            // Get valid new question choice.
-            SurveyApp.out.displayMenuPrompt("Enter the new choice " + choiceChar + ").");
-            newChoice = getValidChoiceText();
+                // Update choice list with modified choice.
+                setChoice(choiceIndex, newChoice);
+                break;
 
-            // Update choice list with modified choice.
-            setChoice(choiceIndex, newChoice);
+            // Test if user chose to return to previous menu.
+            case ModifyQuestionMenu.RETURN:
+                isReturn = true;
+                break;
+
+            default:
+                break;
         }
 
         return isReturn;
@@ -269,10 +276,9 @@ public class MultipleChoiceQuestion extends Question {
      *
      * @param choiceIndex the index of the choice in the choice list
      * @param choice      the new choice
-     * @return the choice previously at the specified position
      */
-    protected String setChoice(int choiceIndex, String choice) {
-        return choiceList.set(choiceIndex, choice);
+    protected void setChoice(int choiceIndex, String choice) {
+        choiceList.set(choiceIndex, choice);
     }
 
     @Override
@@ -286,8 +292,8 @@ public class MultipleChoiceQuestion extends Question {
                 "The current number of allowed " + responseType + "s is: " + numResponses
         }, ModifyQuestionMenu.OPTIONS);
 
-        // Test if user chose to return to previous menu.
-        if (!choice.equals(ModifyQuestionMenu.RETURN)) {
+        // Test if user chose to modify number of responses.
+        if (choice.equals(ModifyQuestionMenu.YES)) {
             // Loop until user enters valid new number of responses.
             do {
                 // Record new number of question responses.

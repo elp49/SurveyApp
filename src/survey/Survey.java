@@ -40,6 +40,9 @@ public class Survey implements Serializable {
         String choice;
         Question q;
 
+        // Create survey name.
+        name = createSurveyName();
+
         // Loop until user quits.
         do {
             // Get user choice from question menu.
@@ -53,19 +56,31 @@ public class Survey implements Serializable {
                     // Create survey.question specific attributes.
                     q.create();
                 } catch (NullPointerException ignore) {
-                    continue;
+                    SurveyApp.out.displayNote("That type of question cannot be created right now. Please try another.");
+                    q = null;
                 }
 
-                // Add survey.question to survey.question list.
-                questionList.add(q);
+                if (q != null) {
+                    // Add survey.question to survey.question list.
+                    questionList.add(q);
+
+                    SurveyApp.out.displayNote("Successfully added new " + q.getQuestionType() + " question.");
+                }
             }
         } while (!choice.equals(CreateQuestionMenu.RETURN));
     }
 
     public void display() {
-        for (Question q : questionList) {
+        // Display survey name.
+        displayName();
+
+        // Display each question in survey.
+        for (Question q : questionList)
             q.display();
-        }
+    }
+
+    protected void displayName() {
+        SurveyApp.out.displaySurveyName(name);
     }
 
     /**
@@ -110,9 +125,6 @@ public class Survey implements Serializable {
     }
 
     public void save() {
-        // Create survey name.
-        if (Validation.isNullOrBlank(name)) name = createSurveyName();
-
         try {
             // Try to serialize survey to file on disk.
             Survey.serialize(this);
@@ -129,11 +141,8 @@ public class Survey implements Serializable {
         // Initialize survey response object.
         surveyResponse = new SurveyResponse(name);
 
-        // Create survey name.
-        if (Validation.isNullOrBlank(name)) name = createSurveyName();
-
         // Display survey name.
-        SurveyApp.out.displaySurveyName(name);
+        displayName();
 
         // Loop through each question.
         for (Question q : questionList) {
@@ -199,7 +208,6 @@ public class Survey implements Serializable {
     protected static String getSurveyPath() {
         String choice;
         String result = null;
-        boolean isNullOrEmpty = false;
         List<String> allSurveyPaths = null;
 
         try {
@@ -209,7 +217,8 @@ public class Survey implements Serializable {
             SurveyApp.out.displayNote("You have not saved any surveys yet.");
         }
 
-        if (allSurveyPaths != null && !allSurveyPaths.isEmpty()) {
+        // Test survey path list is not null or empty.
+        if (!Validation.isNullOrEmpty(allSurveyPaths)) {
             // Add the option to return to previous menu.
             allSurveyPaths.add(Menu.RETURN);
 
@@ -336,12 +345,10 @@ public class Survey implements Serializable {
 
     /**
      * Saves a Survey and its non-transient attributes using Serialization API.
-     *
-     * @return The serialized survey file path.
      */
-    public static String serialize(Survey survey) {
+    public static void serialize(Survey survey) {
         // Serialize the survey to disk using the existing helper function
-        return SerializationHelper.serialize(Survey.class, survey, basePath, survey.getName());
+        SerializationHelper.serialize(Survey.class, survey, basePath, survey.getName());
     }
 
     /**

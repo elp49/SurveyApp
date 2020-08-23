@@ -147,53 +147,51 @@ public class MatchingQuestion extends Question {
      * set the new choice.
      */
     protected void modifyChoiceSet() {
-        boolean choiceWasModified;
-
         // Determine if user will modify question choices.
         String menuChoice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_CHOICES, ModifyQuestionMenu.OPTIONS);
 
-        // Test if the user chose to return to the previous menu.
-        if (!menuChoice.equals(ModifyQuestionMenu.RETURN)) {
-            // Loop until user enters new valid choice.
-            do {
-                // Display choice set.
-                SurveyApp.out.displayQuestion(new String[]{
-                        "Which choice do you want to modify?",
-                        "Enter the character or number."
-                }, choiceSet);
+        // Test if the user chose to modify choice set.
+        if (menuChoice.equals(ModifyQuestionMenu.YES)) {
+            // Display choice set.
+            SurveyApp.out.displayQuestion(new String[]{
+                    "Which choice do you want to modify?",
+                    "Enter the character or number."
+            }, choiceSet);
 
-                // Get and set the choice to be modified.
-                choiceWasModified = modifyChoice();
-
-                // If the user enters an impossible choice character or number,
-                // then choiceWasModified will be false.
-            } while (!choiceWasModified);
+            // Modify choice.
+            modifyChoice();
         }
-
     }
 
     /**
      * Get the choice the user will modify and determine which choice list
      * it is in. If the user enters a possible choice, then get and set
      * the new choice.
-     *
-     * @return true if the user enters a possible choice, otherwise false
      */
-    protected boolean modifyChoice() {
+    protected void modifyChoice() {
+        String response;
         boolean isPossibleChoice;
 
-        // Get choice to be modified.
-        String response = SurveyApp.in.readQuestionResponse();
+        // Loop until user enters a possible choice.
+        do {
+            // Get choice to be modified.
+            response = SurveyApp.in.readQuestionResponse();
 
-        // Determine if character or number choice.
-        if (isPossibleChoice = isPossibleChar(response))
-            modifyColumnOneChoice(response);
-        else if (isPossibleChoice = isPossibleNumber(response))
-            modifyColumnTwoChoice(response);
-        else
-            SurveyApp.out.displayNote(response + " is not a valid choice.");
+            // Test is user entered possible character.
+            if (isPossibleChoice = isPossibleChar(response))
+                modifyColumnOneChoice(response);
 
-        return isPossibleChoice;
+                // Test is user entered possible number.
+            else if (isPossibleChoice = isPossibleNumber(response))
+                modifyColumnTwoChoice(response);
+
+                // Test is user entered impossible choice.
+            else
+                SurveyApp.out.displayNote(response + " is not a valid choice.");
+
+            // If the user enters an impossible choice character or number,
+            // then isPossibleChoice will be false.
+        } while (!isPossibleChoice);
     }
 
     /**
@@ -255,7 +253,7 @@ public class MatchingQuestion extends Question {
 
         // Test number is in range of possible choices.
         if (num != null)
-            isPossibleNumber = Validation.isInRange(num, 1, choiceSet.get(1).size());
+            isPossibleNumber = Validation.isInRange(num, 0, choiceSet.get(1).size() - 1);
 
         return isPossibleNumber;
     }
@@ -318,19 +316,24 @@ public class MatchingQuestion extends Question {
             response = SurveyApp.in.readQuestionResponse().toUpperCase();
 
             // Test for null or blank response.
-            if (!(isPossibleResponse = !Validation.isNullOrBlank(response))) {
+            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
-            } else {
+
+                // Test response length less than 2.
+            else if (!(isPossibleResponse = response.length() >= 2))
+                SurveyApp.out.displayNote("Enter both choices on together (e.g. A1).");
+
+            else {
                 // Split the match.
                 possibleMatch = splitMatch(response);
 
                 // Test choice character index is out of range of choice list.
                 if (!(isPossibleResponse = isPossibleChar(possibleMatch[0])))
-                    SurveyApp.out.displayNote(possibleMatch[0] + " is not a valid choice.");
+                    SurveyApp.out.displayNote(possibleMatch[0] + " is not a available character.");
 
                     // Test choice number index if out of range of choice list.
                 else if (!(isPossibleResponse = isPossibleNumber(possibleMatch[1])))
-                    SurveyApp.out.displayNote(possibleMatch[1] + " is not a valid choice.");
+                    SurveyApp.out.displayNote(possibleMatch[1] + " is not a available number.");
 
             }
 
@@ -345,27 +348,20 @@ public class MatchingQuestion extends Question {
      * Parse each column and separate the given match string into an array.
      *
      * @param match the match to be split
-     * @return the split match or null if match is null or blank
+     * @return the split match
      */
     protected String[] splitMatch(String match) {
-        String[] result = null;
-
-        // Test match for null or blank.
-        if (!Validation.isNullOrBlank(match)) {
-            result = new String[]{
-                    match.substring(0, 1),
-                    match.substring(1)
-            };
-        }
-
-        return result;
+        return new String[]{
+                match.substring(0, 1),
+                match.substring(1)
+        };
     }
 
     @Override
     protected boolean isValidResponse(String response) {
         int i;
         String[] existingMatch;
-        boolean isValidResponse = false;
+        boolean isValidResponse = true;
 
         // Split the possible match.
         String[] matchArray = splitMatch(response);

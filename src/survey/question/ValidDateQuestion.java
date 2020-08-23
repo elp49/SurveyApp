@@ -4,11 +4,17 @@ import survey.SurveyApp;
 import utils.Validation;
 
 public class ValidDateQuestion extends ShortAnswerQuestion {
-    protected final String MONTH_FORMAT = "MM";
-    protected final String DAY_FORMAT = "DD";
-    protected final String YEAR_FORMAT = "YYYY";
-    protected final String SEPARATOR = "-";
-    protected final String DATE_FORMAT = MONTH_FORMAT + SEPARATOR + DAY_FORMAT + SEPARATOR + YEAR_FORMAT;
+    protected final static String MONTH_FORMAT = "MM";
+    protected final static String DAY_FORMAT = "DD";
+    protected final static String YEAR_FORMAT = "YYYY";
+    protected final static String SEPARATOR = "-";
+    protected final static String DATE_FORMAT = MONTH_FORMAT + SEPARATOR + DAY_FORMAT + SEPARATOR + YEAR_FORMAT;
+    protected final static int MONTH_MIN = 1;
+    protected final static int MONTH_MAX = 12;
+    protected final static int DAY_MIN = 1;
+    protected final static int DAY_MAX = 31;
+    protected final static int YEAR_MIN = 1;
+    protected final static int YEAR_MAX = 9999;
 
     public ValidDateQuestion() {
         super();
@@ -73,27 +79,33 @@ public class ValidDateQuestion extends ShortAnswerQuestion {
      * Build and return a formatted date array of type int[] of size three.
      * The elements are month, day, and year respectively.
      *
-     * @param date the date string to be formatted
-     * @return the formatted date string
+     * @param date a date string to be formatted
+     * @return a formatted date string or null if doesn't follow format
      */
     protected int[] getFormattedDateArray(String date) {
-        int i;
+        int numTokens, i;
         String[] responseStrArray, formatStrArray;
-        int[] dateArray = new int[3];
+        int[] dateArray;
 
-        // Test valid response length.
-        if (date.length() == DATE_FORMAT.length()) return null;
+        // Test response length not equal to date format length.
+        if (date.length() != DATE_FORMAT.length())
+            return null;
 
         // Split response and date format into array.
         responseStrArray = date.split(SEPARATOR);
         formatStrArray = DATE_FORMAT.split(SEPARATOR);
 
-        // Test invalid number of tokens.
-        if (responseStrArray.length != formatStrArray.length) return null;
+        // Test number of tokens not equal to date format number of tokens.
+        if ((numTokens = responseStrArray.length) != formatStrArray.length)
+            return null;
 
-        for (i = 0; i < responseStrArray.length; i++) {
-            // Test length of each element.
-            if (responseStrArray[i].length() != formatStrArray[i].length()) return null;
+        // Initialize date array.
+        dateArray = new int[numTokens];
+
+        for (i = 0; i < numTokens; i++) {
+            // Test length of element not equal to length of date format element.
+            if (responseStrArray[i].length() != formatStrArray[i].length())
+                return null;
 
             try {
                 // Test invalid number.
@@ -120,24 +132,33 @@ public class ValidDateQuestion extends ShortAnswerQuestion {
 
         // Test out of range month.
         if (!(isRealDate = (month >= 1 && month <= 12)))
-            SurveyApp.out.displayNote("Month " + month + " is out of range. The month should be be within 1 - 12");
+            SurveyApp.out.displayNote("Month " + month + " is out of range. The month should be be within "
+                    + MONTH_MIN + " - " + MONTH_MAX + ".");
 
             // Test out of range day.
         else if (!(isRealDate = (day >= 1 && day <= 31)))
-            SurveyApp.out.displayNote("Day " + day + " is out of range. The day should be be within 1 - 31");
+            SurveyApp.out.displayNote("Day " + day + " is out of range. The day should be be within "
+                    + DAY_MIN + " - " + DAY_MAX + ".");
 
             // Test out of range year.
         else if (!(isRealDate = (year >= 1)))
-            SurveyApp.out.displayNote("Year " + year + " is out of range. The year should be be within 1 - 9999");
+            SurveyApp.out.displayNote("Year " + year + " is out of range. The year should be be within "
+                    + YEAR_MIN + " - " + YEAR_MAX + ".");
 
             // Test months with only 30 days.
         else if (!(isRealDate = !(day == 31 && (month == 2 || month == 4 || month == 6 || month == 9 || month == 11))))
-            SurveyApp.out.displayNote("Month " + month + " doesn't have 31 days.");
+            SurveyApp.out.displayNote("Month " + month + " doesn't have " + day + " days.");
 
-            // Test for leap year.
+            // Test for 30 days in February.
+        else if (!(isRealDate = !(month == 2 && day == 30))) {
+            SurveyApp.out.displayNote("February does not have " + day + " days.");
+        }
+
+        // Test for leap year.
         else if (month == 2 && day == 29) {
             if (!(isRealDate = !((year % 4 != 0) || (year % 100 == 0 && year % 400 != 0))))
-                SurveyApp.out.displayNote(year + " is not a leap year. February does not have 29 days in " + year + ".");
+                SurveyApp.out.displayNote(year + " is not a leap year. February does not have " + day + " days in "
+                        + year + ".");
         }
 
         return isRealDate;

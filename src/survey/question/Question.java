@@ -20,7 +20,7 @@ public abstract class Question implements Serializable {
         numResponses = 0;
         questionType = "Unknown Question Type";
         responseType = "response";
-        questionResponse = new QuestionResponse();
+        questionResponse = null;
     }
 
     public String getPrompt() {
@@ -48,7 +48,7 @@ public abstract class Question implements Serializable {
 
             // If the prompt is invalid,
             // then isValidPrompt will be false.
-        } while (isValidPrompt);
+        } while (!isValidPrompt);
 
         return prompt;
     }
@@ -88,36 +88,45 @@ public abstract class Question implements Serializable {
      * @return true if the user chose to return to the previous menu, otherwise false.
      */
     protected boolean modifyPrompt() {
-        String choice, newPrompt;
-        boolean isReturn, isValidPrompt;
+        String newPrompt;
+        boolean isValidPrompt;
+        boolean isReturn = false;
 
         // Display the current prompt.
         SurveyApp.out.displayMenuPrompt(prompt);
 
         // Get user choice.
-        choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_PROMPT, ModifyQuestionMenu.OPTIONS);
+        switch (SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_PROMPT, ModifyQuestionMenu.OPTIONS)) {
+            // Test if user chose to modify prompt.
+            case ModifyQuestionMenu.YES:
+                // Loop until user enters valid new prompt.
+                do {
+                    // Display the current prompt.
+                    SurveyApp.out.displayMenuPrompt(prompt);
 
-        // Test if user chose to return to previous menu.
-        if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
-            // Loop until user enters valid new prompt.
-            do {
-                // Display the current prompt.
-                SurveyApp.out.displayMenuPrompt(prompt);
+                    // Record question prompt.
+                    SurveyApp.out.displayMenuPrompt("Enter a new prompt:");
+                    newPrompt = SurveyApp.in.readQuestionPrompt();
 
-                // Record question prompt.
-                SurveyApp.out.displayMenuPrompt("Enter a new prompt:");
-                newPrompt = SurveyApp.in.readQuestionPrompt();
+                    // Test if new prompt is invalid.
+                    if (!(isValidPrompt = !Validation.isNullOrBlank(newPrompt)))
+                        SurveyApp.displayInvalidInputMessage("prompt");
 
-                // Test if new prompt is invalid.
-                if (!(isValidPrompt = !Validation.isNullOrBlank(newPrompt)))
-                    SurveyApp.displayInvalidInputMessage("prompt");
+                    // If the new prompt is invalid,
+                    // then isValidPrompt will be false.
+                } while (!isValidPrompt);
 
-                // If the new prompt is invalid,
-                // then isValidPrompt will be false.
-            } while (!isValidPrompt);
+                // Set the new prompt.
+                prompt = newPrompt;
+                break;
 
-            // Set the new prompt.
-            prompt = newPrompt;
+            // Test if user chose to return to previous menu.
+            case ModifyQuestionMenu.RETURN:
+                isReturn = true;
+                break;
+
+            default:
+                break;
         }
 
         return isReturn;
@@ -129,13 +138,13 @@ public abstract class Question implements Serializable {
         boolean isValidNumResponses;
 
         // Display the current prompt.
-        SurveyApp.out.displayMenuPrompt("The current number of " + responseType + " is: " + numResponses);
+        SurveyApp.out.displayMenuPrompt("The current number of " + responseType + "(s) is: " + numResponses);
 
         // Get user choice.
         choice = SurveyApp.getUserMenuChoice(ModifyQuestionMenu.MODIFY_NUM_RESPONSES, ModifyQuestionMenu.OPTIONS);
 
-        // Test if user chose to return to previous menu.
-        if (!choice.equals(ModifyQuestionMenu.RETURN)) {
+        // Test if user chose to modify number of responses.
+        if (choice.equals(ModifyQuestionMenu.YES)) {
             // Loop until user enters valid new number of responses.
             do {
                 // Record new number of question responses.
@@ -166,6 +175,9 @@ public abstract class Question implements Serializable {
         int i;
         String response;
         QuestionResponse qr;
+
+        // Initialize question response object.
+        questionResponse = new QuestionResponse();
 
         // Loop until user gives valid response(s).
         for (i = 0; i < numResponses; i++) {

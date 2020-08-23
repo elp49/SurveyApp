@@ -209,7 +209,7 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         }
 
         // Print choices.
-        println(sb.toString());
+        print(sb.toString());
     }
 
     private int getLargestChoiceListSize(List<ChoiceList> choiceSet) {
