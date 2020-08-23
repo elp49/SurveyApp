@@ -5,6 +5,7 @@ import survey.SurveyApp;
 import utils.FileConfiguration;
 import utils.FileUtils;
 import utils.SerializationHelper;
+import utils.Validation;
 
 import java.io.File;
 import java.io.IOException;
@@ -202,5 +203,72 @@ public class SurveyResponse implements Serializable {
      */
     public static SurveyResponse deserialize(String path) throws IOException, ClassNotFoundException {
         return SerializationHelper.deserialize(SurveyResponse.class, path);
+    }
+
+    public static List<SurveyResponse> deserializeResponsesOfSurvey(String surveyName) {
+        int i;
+        boolean isCorrupted;
+        String surveyResponseName;
+        int corruptedCount = 0;
+        SurveyResponse sr = null;
+        List<SurveyResponse> result = null;
+
+        // Get length of survey name.
+        int length = surveyName.length();
+
+        // Get all survey response file paths.
+        List<String> allSurveyResponseFilePaths = getAllSurveyResponseFilePaths();
+
+        // Test survey response path list is not null or empty.
+        if (!Validation.isNullOrEmpty(allSurveyResponseFilePaths)) {
+            // Get all survey response filenames.
+            List<String> allSurveyResponseNames = FileUtils.parseAllFilenames(allSurveyResponseFilePaths);
+
+            // Initialize survey response list.
+            result = new ArrayList<>();
+
+            for (i = 0; i < allSurveyResponseNames.size(); i++) {
+                // Get survey response name.
+                surveyResponseName = allSurveyResponseNames.get(i);
+
+                // Test if survey response name contains survey name.
+                if (surveyResponseName.substring(0, length).equals(surveyName)) {
+                    try {
+                        // Deserialize survey response.
+                        sr = deserialize(allSurveyResponseFilePaths.get(i));
+                        isCorrupted = false;
+                    } catch (IOException | ClassNotFoundException ignore) {
+                        // Survey file is likely out of sync with survey class.
+                        isCorrupted = true;
+                        corruptedCount++;
+                    }
+
+                    // Test if file is not corrupted.
+                    if (!isCorrupted) {
+                        // Add deserialized survey response to result.
+                        result.add(sr);
+                    }
+                }
+            }
+
+            // Test if any survey response files are corrupted.
+            if (corruptedCount > 0)
+                SurveyApp.out.displayAllNotes(new String[]{
+                        corruptedCount + " survey response file(s) have become corrupted",
+                        "This is likely because SurveyApp has been updated since this file was saved.",
+                        "These survey responses were not includes."
+                });
+        }
+
+        return result;
+    }
+
+    /**
+     * Retrieves the file paths of all available SurveyResponses that are currently stored on disk in a List.
+     *
+     * @return List<String> for all available survey responses file paths. This can be empty.
+     */
+    public static List<String> getAllSurveyResponseFilePaths() {
+        return FileUtils.getAllFilePathsInDir(basePath);
     }
 }

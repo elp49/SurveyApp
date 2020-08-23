@@ -6,6 +6,7 @@ import survey.response.QuestionResponse;
 import utils.Validation;
 
 import java.io.Serializable;
+import java.util.List;
 
 public abstract class Question implements Serializable {
     private static long serialVersionUID = 1L;
@@ -213,4 +214,6 @@ public abstract class Question implements Serializable {
      * @return true if the question response is valid, otherwise false
      */
     protected abstract boolean isValidResponse(String response);
+
+    public abstract void tabulate(List<QuestionResponse> questionResponseList);
 }

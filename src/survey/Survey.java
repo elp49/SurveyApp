@@ -36,6 +36,14 @@ public class Survey implements Serializable {
         return name;
     }
 
+    protected int getNumQuestions() {
+        return questionList.size();
+    }
+
+    protected Question getQuestion(int index) {
+        return questionList.get(index);
+    }
+
     public void create() {
         String choice;
         Question q;
@@ -89,37 +97,12 @@ public class Survey implements Serializable {
      * @return The deserialized survey or null if no surveys can be loaded.
      */
     public static Survey load() {
-        String surveyPath;
-        boolean isNullOrBlank;
-        boolean isCorrupted = false;
-        Survey result = null;
+        // Deserialize user chosen survey.
+        Survey result = deserializeChosenSurvey("load");
 
-        do {
-            surveyPath = getSurveyPath();
-            if (!(isNullOrBlank = Validation.isNullOrBlank(surveyPath))) {
-                try {
-                    result = Survey.deserialize(surveyPath);
-
-                    SurveyApp.out.displayNote("Loaded successfully.");
-
-                    isCorrupted = false;
-                } catch (IOException | ClassNotFoundException ignore) {
-                    // Survey file is likely out of sync with survey class.
-                    SurveyApp.out.displayAllNotes(new String[]{
-                            "This serialized survey file have become corrupted.",
-                            "This is likely because SurveyApp has been updated since this file was saved."
-                    });
-
-                    isCorrupted = true;
-
-                    handleCorruptedSurvey(surveyPath);
-                }
-            }
-
-            // If the user has chosen a non-corrupted survey to load
-            // or if they have no surveys to load, then quit.
-            // If a survey was found to be corrupted, then continue.
-        } while (isCorrupted && !isNullOrBlank);
+        // Test survey is not null.
+        if (result != null)
+            SurveyApp.out.displayNote("Loaded successfully.");
 
         return result;
     }
@@ -200,12 +183,41 @@ public class Survey implements Serializable {
         }
     }
 
+    public static void tabulate() {
+        int i;
+        Question q;
+
+        // Deserialize user chosen survey.
+        Survey survey = deserializeChosenSurvey("tabulate");
+
+        // Deserialize all responses to this survey.
+        List<SurveyResponse> surveyResponseList = SurveyResponse.deserializeResponsesOfSurvey(survey.getName());
+
+        // Initialize question response list.
+        List<QuestionResponse> questionResponseList = new ArrayList<>();
+
+        for (i = 0; i < survey.getNumQuestions(); i++) {
+            // Get survey question.
+            q = survey.getQuestion(i);
+
+            // Add each response for question to question response list.
+            for (SurveyResponse sr : surveyResponseList)
+                questionResponseList.add(sr.get(i));
+
+            q.tabulate(questionResponseList);
+
+            // Clean up question response list.
+            questionResponseList.clear();
+        }
+    }
+
     /**
      * Prompt the user to choose one of the available surveys and get its path.
      *
+     * @param action the action to be performed on the survey
      * @return The path to the chosen survey or null if no surveys are available.
      */
-    protected static String getSurveyPath() {
+    protected static String getSurveyPath(String action) {
         String choice;
         String result = null;
         List<String> allSurveyPaths = null;
@@ -226,7 +238,7 @@ public class Survey implements Serializable {
             List<String> allSurveyNames = FileUtils.parseAllFilenames(allSurveyPaths);
 
             // Get user chosen survey.
-            choice = SurveyApp.getUserMenuChoice("Please select a file to load:", allSurveyNames);
+            choice = SurveyApp.getUserMenuChoice("Please select a file to " + action + ":", allSurveyNames);
 
             if (!choice.equals(Menu.RETURN)) {
                 // Get survey path from list.
@@ -235,26 +247,6 @@ public class Survey implements Serializable {
         }
 
         return result;
-    }
-
-    public static void handleCorruptedSurvey(String surveyPath) {
-        // Get user choice from delete menu.
-        String choice = SurveyApp.getUserMenuChoice(DeleteMenu.PROMPT, DeleteMenu.OPTIONS);
-
-        if (choice.equals(DeleteMenu.DELETE)) {
-            try {
-                // Try to delete survey.
-                if (Survey.delete(surveyPath)) SurveyApp.out.displayNote("Successfully deleted.");
-                else SurveyApp.out.displayNote("Deletion was unsuccessful. :,(");
-            } catch (IllegalArgumentException e) {
-                SurveyApp.out.displayAllNotes(new String[]{
-                        "Oops, that file does not exist.",
-                        "This could be an issue relating to the file path."
-                });
-            } catch (SecurityException e) {
-                SurveyApp.out.displayNote("You do not have the security permissions to delete this file.");
-            }
-        }
     }
 
     /**
@@ -359,6 +351,60 @@ public class Survey implements Serializable {
      */
     public static Survey deserialize(String path) throws IOException, ClassNotFoundException {
         return SerializationHelper.deserialize(Survey.class, path);
+    }
+
+    public static Survey deserializeChosenSurvey(String action) {
+        String surveyPath;
+        boolean isNullOrBlank;
+        boolean isCorrupted = false;
+        Survey result = null;
+
+        do {
+            surveyPath = getSurveyPath(action);
+            if (!(isNullOrBlank = Validation.isNullOrBlank(surveyPath))) {
+                try {
+                    // Deserialize the chosen survey.
+                    result = Survey.deserialize(surveyPath);
+                    isCorrupted = false;
+                } catch (IOException | ClassNotFoundException ignore) {
+                    // Survey file is likely out of sync with survey class.
+                    SurveyApp.out.displayAllNotes(new String[]{
+                            "This serialized survey file has become corrupted.",
+                            "This is likely because SurveyApp has been updated since this file was saved."
+                    });
+
+                    isCorrupted = true;
+
+                    handleCorruptedSurvey(surveyPath);
+                }
+            }
+
+            // If the user has chosen a non-corrupted survey to load
+            // or if they have no surveys to load, then quit.
+            // If a survey was found to be corrupted, then continue.
+        } while (isCorrupted && !isNullOrBlank);
+
+        return result;
+    }
+
+    public static void handleCorruptedSurvey(String surveyPath) {
+        // Get user choice from delete menu.
+        String choice = SurveyApp.getUserMenuChoice(DeleteMenu.PROMPT, DeleteMenu.OPTIONS);
+
+        if (choice.equals(DeleteMenu.DELETE)) {
+            try {
+                // Try to delete survey.
+                if (Survey.delete(surveyPath)) SurveyApp.out.displayNote("Successfully deleted.");
+                else SurveyApp.out.displayNote("Deletion was unsuccessful. :,(");
+            } catch (IllegalArgumentException e) {
+                SurveyApp.out.displayAllNotes(new String[]{
+                        "Oops, that file does not exist.",
+                        "This could be an issue relating to the file path."
+                });
+            } catch (SecurityException e) {
+                SurveyApp.out.displayNote("You do not have the security permissions to delete this file.");
+            }
+        }
     }
 
     /**

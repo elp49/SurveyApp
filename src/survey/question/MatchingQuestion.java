@@ -2,6 +2,7 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
 import utils.Validation;
 
 import java.util.ArrayList;
@@ -386,5 +387,61 @@ public class MatchingQuestion extends Question {
         }
 
         return isValidResponse;
+    }
+
+    @Override
+    public void tabulate(List<QuestionResponse> questionResponseList) {
+        int newCount, i;
+        boolean isTheSameResponse = false;
+        List<String> responseList, l;
+        List<List<String>> resultResponseList = new ArrayList<>();
+        List<Integer> resultResponseCountList = new ArrayList<>();
+
+        // Create result lists.
+        for (QuestionResponse qr : questionResponseList) {
+            // Get responses list.
+            responseList = qr.getResponseList();
+
+            // Test is result response list is empty.
+            if (!resultResponseList.isEmpty()) {
+                for (i = 0; i < resultResponseList.size(); i++) {
+                    // Get the result response.
+                    l = resultResponseList.get(i);
+
+                    for (String s : responseList)
+                        if (!(isTheSameResponse = l.contains(s)))
+                            break;
+
+                    // If this list in the result response list contains all of the same
+                    // responses as the response list, then isTheSameResponse will be true.
+                    if (isTheSameResponse) {
+                        // Get new response count.
+                        newCount = resultResponseCountList.get(i) + 1;
+
+                        // Increment response count.
+                        resultResponseCountList.set(i, newCount);
+                    } else {
+                        // Add response to result response list.
+                        resultResponseList.add(responseList);
+                        resultResponseCountList.add(1);
+                    }
+                }
+            } else {
+                // Add response to result response list.
+                resultResponseList.add(responseList);
+
+                // Increment response count.
+                resultResponseCountList.add(1);
+            }
+        }
+
+        // Display question prompt.
+        SurveyApp.out.displayQuestion(prompt);
+
+        for (i = 0; i < resultResponseList.size(); i++) {
+            SurveyApp.out.displayQuestionResponse(resultResponseCountList.get(i).toString());
+            for (String s : resultResponseList.get(i))
+                SurveyApp.out.displayQuestionResponse(s);
+        }
     }
 }

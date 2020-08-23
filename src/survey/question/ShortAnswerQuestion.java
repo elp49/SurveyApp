@@ -1,7 +1,11 @@
 package survey.question;
 
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
 import utils.Validation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ShortAnswerQuestion extends EssayQuestion {
     private final int responseCharLimit = 64;
@@ -55,5 +59,44 @@ public class ShortAnswerQuestion extends EssayQuestion {
         } while (!isPossibleResponse);
 
         return response;
+    }
+
+    @Override
+    public void tabulate(List<QuestionResponse> questionResponseList) {
+        int responseIndex, newCount, i;
+        List<String> responseList;
+        List<String> resultResponseList = new ArrayList<>();
+        List<Integer> resultResponseCountList = new ArrayList<>();
+
+        // Create result lists.
+        for (QuestionResponse qr : questionResponseList) {
+            // Get responses list.
+            responseList = qr.getResponseList();
+
+            // Add all responses to result response list.
+            for (String s : responseList) {
+                // Test is response is not already in result list.
+                if (!resultResponseList.contains(s)) {
+                    resultResponseList.add(s);
+                    resultResponseCountList.add(1);
+                } else {
+                    // Get index of response in result list.
+                    responseIndex = resultResponseList.indexOf(s);
+
+                    // Get new response count.
+                    newCount = resultResponseCountList.get(responseIndex) + 1;
+
+                    // Increment response count.
+                    resultResponseCountList.set(responseIndex, newCount);
+                }
+            }
+        }
+
+        // Display question prompt.
+        SurveyApp.out.displayQuestion(prompt);
+
+        for (i = 0; i < resultResponseList.size(); i++) {
+            SurveyApp.out.displayQuestionResponse(resultResponseList.get(i) + " " + resultResponseCountList.get(i));
+        }
     }
 }

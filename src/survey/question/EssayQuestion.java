@@ -1,7 +1,10 @@
 package survey.question;
 
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
 import utils.Validation;
+
+import java.util.List;
 
 public class EssayQuestion extends Question {
 
@@ -60,5 +63,26 @@ public class EssayQuestion extends Question {
     @Override
     protected boolean isValidResponse(String response) {
         return true;
+    }
+
+    @Override
+    public void tabulate(List<QuestionResponse> questionResponseList) {
+        List<String> responseList;
+
+        // Display question prompt.
+        SurveyApp.out.displayQuestion(prompt);
+
+        // Display all question response.
+        for (QuestionResponse qr : questionResponseList) {
+            // Get responses list.
+            responseList = qr.getResponseList();
+
+            // Display all responses.
+            for (String s : responseList)
+                SurveyApp.out.displayQuestionResponse(s);
+
+            // Link break.
+            SurveyApp.out.displayNote("");
+        }
     }
 }

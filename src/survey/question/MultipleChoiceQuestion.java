@@ -2,7 +2,11 @@ package survey.question;
 
 import menu.ModifyQuestionMenu;
 import survey.SurveyApp;
+import survey.response.QuestionResponse;
 import utils.Validation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MultipleChoiceQuestion extends Question {
     protected int numChoices;
@@ -327,5 +331,50 @@ public class MultipleChoiceQuestion extends Question {
         }
 
         return isValidResponse;
+    }
+
+    @Override
+    public void tabulate(List<QuestionResponse> questionResponseList) {
+        int responseIndex, newCount, i;
+        char codePoint = 'A';
+        List<String> responseList;
+        List<String> resultResponseList = new ArrayList<>();
+        List<Integer> resultResponseCountList = new ArrayList<>();
+
+        // Create result response count list.
+        for (i = 0; i < choiceList.size(); i++) {
+            // Add choice character.
+            resultResponseList.add(Character.toString(codePoint));
+
+            // Initialize count to zero.
+            resultResponseCountList.add(0);
+
+            codePoint++;
+        }
+
+        // Increment result response count list.
+        for (QuestionResponse qr : questionResponseList) {
+            // Get responses list.
+            responseList = qr.getResponseList();
+
+            // Add all responses to result response list.
+            for (String s : responseList) {
+                // Get index of response in result response list.
+                responseIndex = resultResponseList.indexOf(s);
+
+                // Get new response count.
+                newCount = resultResponseCountList.get(responseIndex) + 1;
+
+                // Increment response count.
+                resultResponseCountList.set(responseIndex, newCount);
+            }
+        }
+
+        // Display question prompt.
+        SurveyApp.out.displayQuestion(prompt);
+
+        for (i = 0; i < choiceList.size(); i++) {
+            SurveyApp.out.displayQuestionResponse(resultResponseList.get(i) + ": " + resultResponseCountList.get(i));
+        }
     }
 }

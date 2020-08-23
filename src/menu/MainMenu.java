@@ -14,6 +14,7 @@ public class MainMenu {
     public static final String SAVE_SURVEY = "Save the current Survey";
     public static final String TAKE_SURVEY = "Take the current Survey";
     public static final String MODIFY_SURVEY = "Modifying the current Survey";
+    public static final String TABULATE_SURVEY = "Tabulate a Survey";
     public static final String QUIT = "Quit";
     public static final List<String> OPTIONS = new ArrayList<>() {
         {
@@ -23,6 +24,7 @@ public class MainMenu {
             add(SAVE_SURVEY);
             add(TAKE_SURVEY);
             add(MODIFY_SURVEY);
+            add(TABULATE_SURVEY);
             add(QUIT);
         }
     };

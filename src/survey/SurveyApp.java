@@ -127,6 +127,18 @@ public class SurveyApp {
 
                     break;
 
+                case MainMenu.TABULATE_SURVEY:
+
+                    try {
+                        // Tabulate a survey.
+                        Survey.tabulate();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        out.displayNote("There was an error while tabulating your survey.");
+                    }
+
+                    break;
+
                 default:
 
                     break;
