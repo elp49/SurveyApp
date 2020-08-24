@@ -18,18 +18,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Survey implements Serializable {
-    protected static long serialVersionUID = 1L;
-    protected static final String basePath = FileConfiguration.SERIALIZED_FILES_DIRECTORY + "Survey" + File.separator;
+    private static long serialVersionUID = 1L;
+    private static final String basePath = FileConfiguration.SERIALIZED_FILES_DIRECTORY + "Survey" + File.separator;
     protected String name;
+    protected String surveyType;
     public final static String NAME_SEPARATOR = "-";
-    protected final QuestionFactory questionFactory;
-    protected final List<Question> questionList;
-    protected transient SurveyResponse surveyResponse;
+    protected List<Question> questionList = new ArrayList<>();
+    protected transient SurveyResponse surveyResponse = null;
 
-    public Survey(QuestionFactory questionFactory) {
-        this.questionFactory = questionFactory;
-        questionList = new ArrayList<>();
-        surveyResponse = null;
+    public Survey() {
+        surveyType = "Survey";
+        name = createSurveyName();
     }
 
     public String getName() {
@@ -47,9 +46,7 @@ public class Survey implements Serializable {
     public void create() {
         String choice;
         Question q;
-
-        // Create survey name.
-        name = createSurveyName();
+        QuestionFactory qf = new QuestionFactory();
 
         // Loop until user quits.
         do {
@@ -57,8 +54,8 @@ public class Survey implements Serializable {
             choice = SurveyApp.getUserMenuChoice(CreateQuestionMenu.PROMPT, CreateQuestionMenu.OPTIONS);
 
             if (!choice.equals(CreateQuestionMenu.RETURN)) {
-                // Use survey.question factory to get new survey.question.
-                q = questionFactory.getQuestion(choice);
+                // Use survey.question factory to get new question.
+                q = qf.getQuestion(choice);
 
                 try {
                     // Create survey.question specific attributes.
@@ -69,7 +66,7 @@ public class Survey implements Serializable {
                 }
 
                 if (q != null) {
-                    // Add survey.question to survey.question list.
+                    // Add survey.question to question list.
                     questionList.add(q);
 
                     SurveyApp.out.displayNote("Successfully added new " + q.getQuestionType() + " question.");
