@@ -3,6 +3,7 @@ package survey;
 import menu.CreateQuestionMenu;
 import menu.DeleteMenu;
 import menu.Menu;
+import menu.ModifyQuestionMenu;
 import survey.question.Question;
 import survey.response.QuestionResponse;
 import survey.response.SurveyResponse;
@@ -159,7 +160,7 @@ public class Survey implements Serializable {
                     options.add("Type: " + q.getQuestionType() + ",  Prompt: " + q.getPrompt());
 
                 // Append return option.
-                options.add(Menu.RETURN);
+                options.add(ModifyQuestionMenu.RETURN);
 
                 // Get user chosen question.
                 choice = SurveyApp.getUserMenuChoice(new String[]{
@@ -167,7 +168,7 @@ public class Survey implements Serializable {
                         "Below is the list of questions you have created."
                 }, options);
 
-                if (!(isReturn = choice.equals(Menu.RETURN))) {
+                if (!(isReturn = choice.equals(ModifyQuestionMenu.RETURN))) {
                     // Get index of question to be modified.
                     index = options.indexOf(choice);
 
