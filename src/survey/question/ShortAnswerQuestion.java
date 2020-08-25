@@ -37,7 +37,7 @@ public class ShortAnswerQuestion extends EssayQuestion {
     }
 
     @Override
-    protected String readPossibleQuestionResponse() {
+    protected String readValidQuestionResponse() {
         boolean isPossibleResponse;
         String response;
 
@@ -98,5 +98,23 @@ public class ShortAnswerQuestion extends EssayQuestion {
         for (i = 0; i < resultResponseList.size(); i++) {
             SurveyApp.out.displayQuestionResponse(resultResponseList.get(i) + " " + resultResponseCountList.get(i));
         }
+    }
+
+    @Override
+    public QuestionResponse readCorrectAnswer() {
+        int i;
+        String correctAnswer;
+        QuestionResponse answerKey = new QuestionResponse();
+
+        for (i = 1; i <= numResponses; i++) {
+            // Read a correct answer.
+            SurveyApp.out.displayMenuPrompt("Enter correct " + responseType + " #" + i + ":");
+            correctAnswer = readValidQuestionResponse();
+
+            // Add correct answer to answer key.
+            answerKey.add(correctAnswer);
+        }
+
+        return answerKey;
     }
 }

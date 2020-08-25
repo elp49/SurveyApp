@@ -306,8 +306,8 @@ public class MatchingQuestion extends Question {
     }
 
     @Override
-    public String readPossibleQuestionResponse() {
-        boolean isPossibleResponse;
+    public String readValidQuestionResponse() {
+        boolean isValidMatch;
         String response;
         String[] possibleMatch;
 
@@ -316,12 +316,12 @@ public class MatchingQuestion extends Question {
             // Get user's match.
             response = SurveyApp.in.readQuestionResponse().toUpperCase();
 
-            // Test for null or blank response.
-            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
+            // Test null or blank response.
+            if (!(isValidMatch = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-                // Test response length less than 2.
-            else if (!(isPossibleResponse = response.length() >= 2))
+            // Test response length less than 2.
+            else if (!(isValidMatch = response.length() >= 2))
                 SurveyApp.out.displayNote("Enter both choices on together (e.g. A1).");
 
             else {
@@ -329,18 +329,21 @@ public class MatchingQuestion extends Question {
                 possibleMatch = splitMatch(response);
 
                 // Test choice character index is out of range of choice list.
-                if (!(isPossibleResponse = isPossibleChar(possibleMatch[0])))
+                if (!(isValidMatch = isPossibleChar(possibleMatch[0])))
                     SurveyApp.out.displayNote(possibleMatch[0] + " is not a available character.");
 
-                    // Test choice number index if out of range of choice list.
-                else if (!(isPossibleResponse = isPossibleNumber(possibleMatch[1])))
+                // Test choice number index if out of range of choice list.
+                else if (!(isValidMatch = isPossibleNumber(possibleMatch[1])))
                     SurveyApp.out.displayNote(possibleMatch[1] + " is not a available number.");
 
+                // Test either choice has already been chosen.
+                else
+                    isValidMatch = isValidMatch(possibleMatch);
             }
 
-            // If user response is null or blank or either the choice or number
-            // are invalid, then isPossibleResponse will be false.
-        } while (!isPossibleResponse);
+            // If user enters an invalid response,
+            // then isValidMatch will be false.
+        } while (!isValidMatch);
 
         return response;
     }
@@ -358,14 +361,16 @@ public class MatchingQuestion extends Question {
         };
     }
 
-    @Override
-    protected boolean isValidResponse(String response) {
+    /**
+     * Determine if the provided question response is valid match.
+     *
+     * @param match the user entered match
+     * @return true if the question response is valid, otherwise false
+     */
+    protected boolean isValidMatch(String[] match) {
         int i;
         String[] existingMatch;
         boolean isValidResponse = true;
-
-        // Split the possible match.
-        String[] matchArray = splitMatch(response);
 
         // Loop through existing user matches.
         for (String s : questionResponse.getResponseList()) {
@@ -373,9 +378,9 @@ public class MatchingQuestion extends Question {
             existingMatch = splitMatch(s);
 
             // Test if either choice from the new match has already been recorded.
-            for (i = 0; i < matchArray.length; i++) {
-                if (!(isValidResponse = !matchArray[i].equals(existingMatch[i]))) {
-                    SurveyApp.out.displayNote("You've already entered choice " + matchArray[i]);
+            for (i = 0; i < match.length; i++) {
+                if (!(isValidResponse = !match[i].equals(existingMatch[i]))) {
+                    SurveyApp.out.displayNote("You've already entered choice " + match[i]);
                     break;
                 }
             }
@@ -443,5 +448,23 @@ public class MatchingQuestion extends Question {
             for (String s : resultResponseList.get(i))
                 SurveyApp.out.displayQuestionResponse(s);
         }
+    }
+
+    @Override
+    public QuestionResponse readCorrectAnswer() {
+        int i;
+        String correctAnswer;
+        QuestionResponse answerKey = new QuestionResponse();
+
+        for (i = 1; i <= numResponses; i++) {
+            // Read a correct answer.
+            SurveyApp.out.displayMenuPrompt("Enter correct " + responseType + " #" + i + ":");
+            correctAnswer = readValidQuestionResponse();
+
+            // Add correct answer to answer key.
+            answerKey.add(correctAnswer);
+        }
+
+        return answerKey;
     }
 }

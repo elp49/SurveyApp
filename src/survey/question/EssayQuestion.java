@@ -41,8 +41,8 @@ public class EssayQuestion extends Question {
     }
 
     @Override
-    protected String readPossibleQuestionResponse() {
-        boolean isPossibleResponse;
+    protected String readValidQuestionResponse() {
+        boolean isValidResponse;
         String response;
 
         do {
@@ -50,19 +50,14 @@ public class EssayQuestion extends Question {
             response = SurveyApp.in.readQuestionResponse();
 
             // Test for null or blank string.
-            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
+            if (!(isValidResponse = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-            // If the user enters an impossible question response,
-            // then isPossibleResponse will be false.
-        } while (!isPossibleResponse);
+            // If the user enters an invalid question response,
+            // then isValidResponse will be false.
+        } while (!isValidResponse);
 
         return response;
-    }
-
-    @Override
-    protected boolean isValidResponse(String response) {
-        return true;
     }
 
     @Override
@@ -84,5 +79,10 @@ public class EssayQuestion extends Question {
             // Link break.
             SurveyApp.out.displayNote("");
         }
+    }
+
+    @Override
+    public QuestionResponse readCorrectAnswer() {
+        return null;
     }
 }

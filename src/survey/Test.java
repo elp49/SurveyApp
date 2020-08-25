@@ -2,6 +2,7 @@ package survey;
 
 import menu.CreateQuestionMenu;
 import survey.question.Question;
+import survey.response.QuestionResponse;
 import survey.response.SurveyResponse;
 import utils.FileConfiguration;
 
@@ -22,6 +23,7 @@ public class Test extends Survey {
     public void create() {
         String choice;
         Question q;
+        QuestionResponse correctAnswer;
         QuestionFactory qf = new QuestionFactory();
 
         // Loop until user quits.
@@ -42,7 +44,12 @@ public class Test extends Survey {
                 }
 
                 if (q != null) {
-                    // Get the correct
+                    // Read correct answer.
+                    correctAnswer = q.readCorrectAnswer();
+
+                    // Add correct answer to answer key.
+                    answerKey.add(correctAnswer);
+
                     // Add survey.question to question list.
                     questionList.add(q);
 

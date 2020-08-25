@@ -43,36 +43,37 @@ public class ValidDateQuestion extends ShortAnswerQuestion {
     }
 
     @Override
-    protected String readPossibleQuestionResponse() {
-        boolean isPossibleResponse;
+    protected String readValidQuestionResponse() {
+        boolean isValidResponse;
         String response;
+        int[] dateArray;
 
         do {
             // Get question response.
             response = SurveyApp.in.readQuestionResponse();
 
-            // Test for null or blank string.
-            if (!(isPossibleResponse = !Validation.isNullOrBlank(response)))
+            // Test null or blank response.
+            if (!(isValidResponse = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-                // Test if response follows date format.
-            else if (!(isPossibleResponse = (getFormattedDateArray(response) != null)))
-                SurveyApp.out.displayNote("Your " + responseType + " must be in the following format: " + DATE_FORMAT);
+            else {
+                // Get formatted date array.
+                dateArray = getFormattedDateArray(response);
 
-            // If the user enters an impossible question response,
-            // then isPossibleResponse will be false.
-        } while (!isPossibleResponse);
+                // Test invalid date format response.
+                if (!(isValidResponse = (dateArray != null)))
+                    SurveyApp.out.displayNote("Your " + responseType + " must be in the following format: " + DATE_FORMAT);
+
+                // Test response is not real date.
+                else
+                    isValidResponse = isRealDate(dateArray[0], dateArray[1], dateArray[2]);
+            }
+
+            // If the user enters an invalid question response,
+            // then isValidResponse will be false.
+        } while (!isValidResponse);
 
         return response;
-    }
-
-    @Override
-    protected boolean isValidResponse(String response) {
-        // Get formatted date array.
-        int[] dateArray = getFormattedDateArray(response);
-
-        // Determine if the response contains a real date.
-        return isRealDate(dateArray[0], dateArray[1], dateArray[2]);
     }
 
     /**

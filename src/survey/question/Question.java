@@ -182,12 +182,8 @@ public abstract class Question implements Serializable {
 
         // Loop until user gives valid response(s).
         for (i = 0; i < numResponses; i++) {
-            do {
-                // Record user response.
-                response = readPossibleQuestionResponse();
-
-                // Test if valid response.
-            } while (!isValidResponse(response));
+            // Record valid user response.
+            response = readValidQuestionResponse();
 
             // Add response string to question response.
             questionResponse.add(response);
@@ -201,19 +197,13 @@ public abstract class Question implements Serializable {
     }
 
     /**
-     * Read a possible question response.
+     * Read a valid question response.
      *
      * @return a possible choice
      */
-    protected abstract String readPossibleQuestionResponse();
-
-    /**
-     * Determine if the provided question response is valid.
-     *
-     * @param response the question response
-     * @return true if the question response is valid, otherwise false
-     */
-    protected abstract boolean isValidResponse(String response);
+    protected abstract String readValidQuestionResponse();
 
     public abstract void tabulate(List<QuestionResponse> questionResponseList);
+
+    public abstract QuestionResponse readCorrectAnswer();
 }

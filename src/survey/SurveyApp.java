@@ -40,7 +40,7 @@ public class SurveyApp {
                 case MainMenu.CREATE_SURVEY:
 
                     // Test survey for null.
-                    survey = new Survey(new QuestionFactory());
+                    survey = new Survey();
                     try {
                         survey.create();
                     } catch (Exception e) {
