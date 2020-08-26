@@ -372,23 +372,25 @@ public class MatchingQuestion extends Question {
         String[] existingMatch;
         boolean isValidResponse = true;
 
-        // Loop through existing user matches.
-        for (String s : questionResponse.getResponseList()) {
-            // Split the existing user match.
-            existingMatch = splitMatch(s);
+        if (questionResponse != null && !questionResponse.getResponseList().isEmpty()) {
+            // Loop through existing user matches.
+            for (String s : questionResponse.getResponseList()) {
+                // Split the existing user match.
+                existingMatch = splitMatch(s);
 
-            // Test if either choice from the new match has already been recorded.
-            for (i = 0; i < match.length; i++) {
-                if (!(isValidResponse = !match[i].equals(existingMatch[i]))) {
-                    SurveyApp.out.displayNote("You've already entered choice " + match[i]);
-                    break;
+                // Test if either choice from the new match has already been recorded.
+                for (i = 0; i < match.length; i++) {
+                    if (!(isValidResponse = !match[i].equals(existingMatch[i]))) {
+                        SurveyApp.out.displayNote("You've already entered choice " + match[i]);
+                        break;
+                    }
                 }
-            }
 
-            // If one of the choices have already been entered,
-            // then isValidResponse will be false.
-            if (!isValidResponse)
-                break;
+                // If one of the choices have already been entered,
+                // then isValidResponse will be false.
+                if (!isValidResponse)
+                    break;
+            }
         }
 
         return isValidResponse;
@@ -456,6 +458,9 @@ public class MatchingQuestion extends Question {
         String correctAnswer;
         QuestionResponse answerKey = new QuestionResponse();
 
+        // Display choices.
+        SurveyApp.out.displayQuestionChoiceSet(choiceSet);
+
         for (i = 1; i <= numResponses; i++) {
             // Read a correct answer.
             SurveyApp.out.displayMenuPrompt("Enter correct " + responseType + " #" + i + ":");
@@ -466,5 +471,30 @@ public class MatchingQuestion extends Question {
         }
 
         return answerKey;
+    }
+
+    @Override
+    public void displayAnswer(QuestionResponse answer) {
+        int i;
+        int choiceCharIndex, choiceNumIndex;
+        String[] match;
+
+        // Get choice lists.
+        ChoiceList colOne = choiceSet.get(0);
+        ChoiceList colTwo = choiceSet.get(1);
+
+        for (i = 0; i < answer.size(); i++) {
+            // Split the match.
+            match = splitMatch(answer.get(i));
+
+            // Get choice indices.
+            choiceCharIndex = getChoiceCharIndex(match[0]);
+            choiceNumIndex = getChoiceNumIndex(match[1]);
+
+            SurveyApp.out.displayQuestionResponse(
+                    match[0] + ") " + colOne.get(choiceCharIndex) + ", " +
+                            match[1] + ") " + colTwo.get(choiceNumIndex)
+            );
+        }
     }
 }

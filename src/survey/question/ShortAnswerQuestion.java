@@ -103,12 +103,18 @@ public class ShortAnswerQuestion extends EssayQuestion {
     @Override
     public QuestionResponse readCorrectAnswer() {
         int i;
-        String correctAnswer;
+        String answerPrompt, correctAnswer;
         QuestionResponse answerKey = new QuestionResponse();
 
         for (i = 1; i <= numResponses; i++) {
+            // Create answer prompt.
+            if (numResponses == 1)
+                answerPrompt = "Enter the correct " + responseType + ":";
+            else
+                answerPrompt = "Enter correct " + responseType + " #" + i + ":";
+
             // Read a correct answer.
-            SurveyApp.out.displayMenuPrompt("Enter correct " + responseType + " #" + i + ":");
+            SurveyApp.out.displayMenuPrompt(answerPrompt);
             correctAnswer = readValidQuestionResponse();
 
             // Add correct answer to answer key.
@@ -116,5 +122,20 @@ public class ShortAnswerQuestion extends EssayQuestion {
         }
 
         return answerKey;
+    }
+
+    @Override
+    public void displayAnswer(QuestionResponse answer) {
+        int i;
+
+        // Test for single correct answer.
+        if (numResponses == 1)
+            SurveyApp.out.displayQuestionResponse(answer.get(0), false, true);
+
+        else {
+            for (i = 0; i < answer.size(); i++) {
+                SurveyApp.out.displayQuestionResponse(answer.get(i));
+            }
+        }
     }
 }

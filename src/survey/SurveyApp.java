@@ -15,8 +15,6 @@ import java.util.List;
 public class SurveyApp {
     public static SurveyInputReader in;
     public static SurveyOutputWriter out;
-    private Survey survey = null;
-    private Menu menu;
     private String choice;
 
     public SurveyApp() {
@@ -34,7 +32,7 @@ public class SurveyApp {
     }
 
     private void run() {
-        menu = new MainMenu();
+        Menu menu = new MainMenu();
 
         // Loop until user quits.
         do {
@@ -68,18 +66,15 @@ public class SurveyApp {
                 default:
                     break;
             }
-
-            // If the user chooses to quit,
-            // then isQuit will be true.
         } while (!choice.equals(MainMenu.QUIT));
 
     }
 
     private void runSurveyApp() {
-        // Create survey object;
-        survey = new Survey();
+        // Create survey object
+        Survey survey = null;
 
-        menu = new SurveyMenu();
+        SurveyMenu menu = new SurveyMenu();
 
         // Loop until user returns to main menu.
         do {
@@ -91,7 +86,7 @@ public class SurveyApp {
 
             switch (choice) {
                 case SurveyMenu.CREATE:
-                    // Test survey for null.
+                    // Test for null.
                     survey = new Survey();
 
                     try {
@@ -104,7 +99,7 @@ public class SurveyApp {
                     break;
 
                 case SurveyMenu.DISPLAY:
-                    // Test survey for null.
+                    // Test for null.
                     if (survey == null)
                         displayNoSurveyLoadedMessage("display");
 
@@ -130,7 +125,7 @@ public class SurveyApp {
                         out.displayNote("There was an error while loading your survey.");
                     }
 
-                    // Test survey for null.
+                    // Test for null.
                     if (s != null) survey = s;
 
                     break;
@@ -152,7 +147,7 @@ public class SurveyApp {
                     break;
 
                 case SurveyMenu.TAKE:
-                    // Test survey for null.
+                    // Test for null.
                     if (survey == null)
                         displayNoSurveyLoadedMessage("take");
 
@@ -168,7 +163,7 @@ public class SurveyApp {
                     break;
 
                 case SurveyMenu.MODIFY:
-                    // Test survey for null.
+                    // Test for null.
                     if (survey == null)
                         displayNoSurveyLoadedMessage("modify");
 
@@ -186,7 +181,7 @@ public class SurveyApp {
                 case SurveyMenu.TABULATE:
                     try {
                         // Tabulate a survey.
-                        Survey.tabulate();
+                        Survey.tabulateSurvey();
                     } catch (Exception e) {
                         e.printStackTrace();
                         out.displayNote("There was an error while tabulating your survey.");
@@ -201,10 +196,10 @@ public class SurveyApp {
     }
 
     private void runTestApp() {
-        // Create test object;
-        survey = new Test();
+        // Create test object
+        Test test = null;
 
-        menu = new TestMenu();
+        TestMenu menu = new TestMenu();
 
         // Loop until user returns to main menu.
         do {
@@ -216,11 +211,11 @@ public class SurveyApp {
 
             switch (choice) {
                 case TestMenu.CREATE:
-                    // Test test for null.
-                    survey = new Survey();
+                    // Test for null.
+                    test = new Test();
 
                     try {
-                        survey.create();
+                        test.create();
                     } catch (Exception e) {
                         e.printStackTrace();
                         out.displayNote("There was an error while creating your test.");
@@ -229,13 +224,13 @@ public class SurveyApp {
                     break;
 
                 case TestMenu.DISPLAY:
-                    // Test test for null.
-                    if (survey == null)
-                        displayNoSurveyLoadedMessage("display");
+                    // Test for null.
+                    if (test == null)
+                        displayNoTestLoadedMessage("display");
 
                     else {
                         try {
-                            survey.display();
+                            test.display();
                         } catch (Exception e) {
                             e.printStackTrace();
                             out.displayNote("There was an error while displaying your test.");
@@ -245,13 +240,13 @@ public class SurveyApp {
                     break;
 
                 case TestMenu.DISPLAY_WITH_ANSWERS:
-                    // Test test for null.
-                    if (survey == null)
-                        displayNoSurveyLoadedMessage("display");
+                    // Test for null.
+                    if (test == null)
+                        displayNoTestLoadedMessage("display");
 
                     else {
                         try {
-                            survey.displayWithAnswers();
+                            test.displayWithAnswers();
                         } catch (Exception e) {
                             e.printStackTrace();
                             out.displayNote("There was an error while displaying your test.");
@@ -261,29 +256,29 @@ public class SurveyApp {
                     break;
 
                 case TestMenu.LOAD:
-                    Survey s = null;
+                    Test t = null;
 
                     try {
                         // Load a test.
-                        s = Test.load();
+                        t = Test.load();
                     } catch (Exception e) {
                         e.printStackTrace();
                         out.displayNote("There was an error while loading your test.");
                     }
 
-                    // Test test for null.
-                    if (s != null) survey = s;
+                    // Test for null.
+                    if (t != null) test = t;
 
                     break;
 
                 case TestMenu.SAVE:
-                    // Test test for null.
-                    if (survey == null)
-                        displayNoSurveyLoadedMessage("save");
+                    // Test for null.
+                    if (test == null)
+                        displayNoTestLoadedMessage("save");
 
                     else {
                         try {
-                            survey.save();
+                            test.save();
                         } catch (Exception e) {
                             e.printStackTrace();
                             out.displayNote("There was an error while saving your test.");
@@ -293,13 +288,13 @@ public class SurveyApp {
                     break;
 
                 case TestMenu.TAKE:
-                    // Test test for null.
-                    if (survey == null)
-                        displayNoSurveyLoadedMessage("take");
+                    // Test for null.
+                    if (test == null)
+                        displayNoTestLoadedMessage("take");
 
                     else {
                         try {
-                            survey.take();
+                            test.take();
                         } catch (Exception e) {
                             e.printStackTrace();
                             out.displayNote("There was an error while taking your test.");
@@ -309,13 +304,13 @@ public class SurveyApp {
                     break;
 
                 case TestMenu.MODIFY:
-                    // Test test for null.
-                    if (survey == null)
-                        displayNoSurveyLoadedMessage("modify");
+                    // Test for null.
+                    if (test == null)
+                        displayNoTestLoadedMessage("modify");
 
                     else {
                         try {
-                            survey.modify();
+                            test.modify();
                         } catch (Exception e) {
                             e.printStackTrace();
                             out.displayNote("There was an error while modifying your test.");
@@ -327,7 +322,18 @@ public class SurveyApp {
                 case TestMenu.TABULATE:
                     try {
                         // Tabulate a test.
-                        Survey.tabulate();
+                        Test.tabulateTest();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        out.displayNote("There was an error while tabulating your test.");
+                    }
+
+                    break;
+
+                case TestMenu.GRADE:
+                    try {
+                        // Grade a test.
+                        Test.grade();
                     } catch (Exception e) {
                         e.printStackTrace();
                         out.displayNote("There was an error while tabulating your test.");
@@ -386,6 +392,13 @@ public class SurveyApp {
             out.displayNote("You must have a survey loaded in order to " + action + " it.");
         else
             out.displayNote("You must have a survey loaded.");
+    }
+
+    public static void displayNoTestLoadedMessage(String action) {
+        if (!Validation.isNullOrBlank(action))
+            out.displayNote("You must have a test loaded in order to " + action + " it.");
+        else
+            out.displayNote("You must have a test loaded.");
     }
 
     public static void displayInvalidInputMessage(String inputType) {

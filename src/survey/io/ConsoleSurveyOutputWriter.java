@@ -41,6 +41,32 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
         println(line);
     }
 
+
+    // TODO:
+    /*public void displayNote(String note) {
+        displayNote(note, true);
+    }
+
+    public void displayNote(String note, boolean lineSepBefore) { displayNote(note, lineSepBefore, true); }
+
+    public void displayNote(String note, boolean lineSepBefore, boolean lineSepAfter) {
+        String line = "";
+
+        // Test line separator before note.
+        if (lineSepBefore)
+            line += lineSeparator();
+
+        // Append note.
+        line += note;
+
+        // Test line separator after note.
+        if (lineSepAfter)
+            line += lineSeparator();
+
+        println(line);
+    }.*/
+
+
     public void displayAllNotes(String[] note) {
         displayAllNotes(note, false);
     }
@@ -230,6 +256,23 @@ public class ConsoleSurveyOutputWriter implements SurveyOutputWriter {
 
     public void displayQuestionResponse(String response) {
         println(response);
+    }
+
+    public void displayQuestionResponse(String response, boolean lineSepBefore, boolean lineSepAfter) {
+        String line = "";
+
+        // Test line separator before response.
+        if (lineSepBefore)
+            line += lineSeparator();
+
+        // Append response.
+        line += response;
+
+        // Test line separator after response.
+        if (lineSepAfter)
+            println(line);
+        else
+            print(line);
     }
 
     public void displaySurveyResponse(String response) {

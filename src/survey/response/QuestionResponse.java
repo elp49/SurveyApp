@@ -30,4 +30,8 @@ public class QuestionResponse implements Serializable {
     public void add(int index, String s) {
         responseList.add(index, s);
     }
+
+    public int size() {
+        return responseList.size();
+    }
 }

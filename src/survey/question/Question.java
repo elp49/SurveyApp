@@ -32,6 +32,10 @@ public abstract class Question implements Serializable {
         return questionType;
     }
 
+    public String getResponseType() {
+        return responseType;
+    }
+
     public abstract void create();
 
     protected String getValidPrompt() {
@@ -175,7 +179,6 @@ public abstract class Question implements Serializable {
     public QuestionResponse readQuestionResponse() {
         int i;
         String response;
-        QuestionResponse qr;
 
         // Initialize question response object.
         questionResponse = new QuestionResponse();
@@ -189,11 +192,7 @@ public abstract class Question implements Serializable {
             questionResponse.add(response);
         }
 
-        // Clean up question response object.
-        qr = questionResponse;
-        questionResponse.clear();
-
-        return qr;
+        return questionResponse;
     }
 
     /**
@@ -206,4 +205,26 @@ public abstract class Question implements Serializable {
     public abstract void tabulate(List<QuestionResponse> questionResponseList);
 
     public abstract QuestionResponse readCorrectAnswer();
+
+    public abstract void displayAnswer(QuestionResponse answer);
+
+    public boolean isCorrectResponse(QuestionResponse key, QuestionResponse response) {
+        int i, j;
+        boolean isCorrectResponse = false;
+        String s;
+
+        for (i = 0; i < key.size(); i++) {
+            s = key.get(i);
+            for (j = 0; j < response.size(); j++) {
+                // Test response is equal to key
+                if (isCorrectResponse = (s.equals(response.get(j))))
+                    break;
+            }
+
+            if (!isCorrectResponse)
+                break;
+        }
+
+        return isCorrectResponse;
+    }
 }

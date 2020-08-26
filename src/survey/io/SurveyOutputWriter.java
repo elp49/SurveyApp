@@ -47,5 +47,7 @@ public interface SurveyOutputWriter {
 
     void displayQuestionResponse(String response);
 
+    void displayQuestionResponse(String response, boolean lineSepBefore, boolean lineSepAfter);
+
     void displaySurveyResponse(String response);
 }

@@ -85,4 +85,13 @@ public class EssayQuestion extends Question {
     public QuestionResponse readCorrectAnswer() {
         return null;
     }
+
+    @Override
+    public void displayAnswer(QuestionResponse answer) {
+    }
+
+    @Override
+    public boolean isCorrectResponse(QuestionResponse key, QuestionResponse response) {
+        return false;
+    }
 }

@@ -2,8 +2,8 @@ package survey;
 
 import menu.CreateQuestionMenu;
 import menu.DeleteMenu;
-import menu.Menu;
 import menu.ModifyQuestionMenu;
+import menu.SurveyMenu;
 import survey.question.Question;
 import survey.response.QuestionResponse;
 import survey.response.SurveyResponse;
@@ -42,6 +42,10 @@ public class Survey implements Serializable {
 
     protected Question getQuestion(int index) {
         return questionList.get(index);
+    }
+
+    protected List<Question> getQuestionList() {
+        return questionList;
     }
 
     public void create() {
@@ -108,8 +112,8 @@ public class Survey implements Serializable {
     public void save() {
         try {
             // Try to serialize survey to file on disk.
-            Survey.serialize(this);
-            SurveyApp.out.displayNote("Saved successfully.");
+            serialize(this);
+            SurveyApp.out.displayNote("Saved survey successfully.");
         } catch (Exception e) {
             e.printStackTrace();
             SurveyApp.out.displayNote("There was an error while saving your survey.");
@@ -181,12 +185,21 @@ public class Survey implements Serializable {
         }
     }
 
-    public static void tabulate() {
-        int i;
-        Question q;
-
+    public static void tabulateSurvey() {
         // Deserialize user chosen survey.
         Survey survey = deserializeChosenSurvey("tabulate");
+
+        // Test survey is not null.
+        if (survey != null)
+            tabulate(survey);
+
+        else
+            SurveyApp.out.displayNote("You must create a survey first before you can tabulate it.");
+    }
+
+    public static void tabulate(Survey survey) {
+        int i;
+        Question q;
 
         // Deserialize all responses to this survey.
         List<SurveyResponse> surveyResponseList = SurveyResponse.deserializeResponsesOfSurvey(survey.getName());
@@ -217,28 +230,29 @@ public class Survey implements Serializable {
      */
     protected static String getSurveyPath(String action) {
         String choice;
+        List<String> allSurveyNames;
         String result = null;
         List<String> allSurveyPaths = null;
 
         try {
             // Try to get all survey file paths.
-            allSurveyPaths = Survey.getAllSurveyFilePaths();
+            allSurveyPaths = getAllSurveyFilePaths();
         } catch (IllegalStateException ignore) {
             SurveyApp.out.displayNote("You have not saved any surveys yet.");
         }
 
         // Test survey path list is not null or empty.
         if (!Validation.isNullOrEmpty(allSurveyPaths)) {
-            // Add the option to return to previous menu.
-            allSurveyPaths.add(Menu.RETURN);
-
             // Get all survey filenames.
-            List<String> allSurveyNames = FileUtils.parseAllFilenames(allSurveyPaths);
+            allSurveyNames = FileUtils.parseAllFilenames(allSurveyPaths);
+
+            // Add the option to return to previous menu.
+            allSurveyNames.add(SurveyMenu.RETURN);
 
             // Get user chosen survey.
             choice = SurveyApp.getUserMenuChoice("Please select a file to " + action + ":", allSurveyNames);
 
-            if (!choice.equals(Menu.RETURN)) {
+            if (!choice.equals(SurveyMenu.RETURN)) {
                 // Get survey path from list.
                 result = allSurveyPaths.get(allSurveyNames.indexOf(choice));
             }
@@ -250,11 +264,11 @@ public class Survey implements Serializable {
     /**
      * Create a name for the survey.
      *
-     * @return The survey name.
+     * @return a survey name.
      */
     protected String createSurveyName() {
         // Create survey filename.
-        return "Survey-" + findNextSmallestSurveyNumber();
+        return surveyType + NAME_SEPARATOR + findNextSmallestSurveyNumber();
     }
 
     /**
@@ -307,22 +321,41 @@ public class Survey implements Serializable {
     }
 
     /**
-     * Try to parse a survey's number from its name.
+     * Try to parse a survey's number from its file name.
      *
-     * @param surveyName the survey name
+     * @param surveyFileName the survey file name
      * @return the survey number or null if it does not follow the
      * expected naming convention: Survey-[DIGIT]
      */
-    protected Integer parseSurveyNumber(String surveyName) {
+    protected Integer parseSurveyNumber(String surveyFileName) {
         String num;
         Integer result = null;
 
         try {
             // Try to get number from survey name.
-            num = surveyName.split(NAME_SEPARATOR)[1];
+            num = surveyFileName.split(NAME_SEPARATOR)[1];
 
             // Try to parse survey number from name.
             result = Integer.parseInt(num);
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignore) {
+        }
+
+        return result;
+    }
+
+    /**
+     * Try to parse a survey's name.
+     *
+     * @param surveyFileName the survey file name
+     * @return the survey name or null if it does not follow the
+     * expected naming convention: Survey-[DIGIT]
+     */
+    protected String parseSurveyName(String surveyFileName) {
+        String result = null;
+
+        try {
+            // Try to get number from survey name.
+            result = surveyFileName.split(NAME_SEPARATOR)[0];
         } catch (NumberFormatException | ArrayIndexOutOfBoundsException ignore) {
         }
 
@@ -362,7 +395,7 @@ public class Survey implements Serializable {
             if (!(isNullOrBlank = Validation.isNullOrBlank(surveyPath))) {
                 try {
                     // Deserialize the chosen survey.
-                    result = Survey.deserialize(surveyPath);
+                    result = deserialize(surveyPath);
                     isCorrupted = false;
                 } catch (IOException | ClassNotFoundException ignore) {
                     // Survey file is likely out of sync with survey class.
@@ -378,7 +411,7 @@ public class Survey implements Serializable {
             }
 
             // If the user has chosen a non-corrupted survey to load
-            // or if they have no surveys to load, then quit.
+            // or if they have no surveys to load, then return.
             // If a survey was found to be corrupted, then continue.
         } while (isCorrupted && !isNullOrBlank);
 
@@ -392,7 +425,7 @@ public class Survey implements Serializable {
         if (choice.equals(DeleteMenu.DELETE)) {
             try {
                 // Try to delete survey.
-                if (Survey.delete(surveyPath)) SurveyApp.out.displayNote("Successfully deleted.");
+                if (delete(surveyPath)) SurveyApp.out.displayNote("Successfully deleted.");
                 else SurveyApp.out.displayNote("Deletion was unsuccessful. :,(");
             } catch (IllegalArgumentException e) {
                 SurveyApp.out.displayAllNotes(new String[]{

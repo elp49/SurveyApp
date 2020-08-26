@@ -1,5 +1,6 @@
 package survey.response;
 
+import menu.SurveyMenu;
 import survey.Survey;
 import survey.SurveyApp;
 import utils.FileConfiguration;
@@ -36,6 +37,10 @@ public class SurveyResponse implements Serializable {
 
     public QuestionResponse get(int index) {
         return responseList.get(index);
+    }
+
+    public int size() {
+        return responseList.size();
     }
 
     /**
@@ -115,7 +120,7 @@ public class SurveyResponse implements Serializable {
      * Get the list of all survey response names and filter out the survey responses
      * from all other surveys.
      *
-     * @return the filtered list of survey response names.
+     * @return the filtered list of survey response names
      */
     protected List<String> getFilteredSurveyResponseNames() {
         int surveyNameLength;
@@ -148,14 +153,103 @@ public class SurveyResponse implements Serializable {
     }
 
     /**
+     * Prompt the user to choose one of the available survey responses and get its path.
+     *
+     * @param surveyFilename the survey filename.
+     * @param action         the action to be performed on the survey response
+     * @return a path to the chosen survey response or null if no survey responses are available.
+     */
+    public static String getSurveyResponsePath(String surveyFilename, String action) {
+        String choice;
+        List<String> filteredNames;
+        String result = null;
+        List<String> filteredPaths = null;
+
+        try {
+            // Try to get filtered survey response file paths.
+            filteredPaths = getFilteredSurveyResponseFilePaths(surveyFilename);
+        } catch (IllegalStateException ignore) {
+            SurveyApp.out.displayNote(surveyFilename + " has not been taken yet.");
+        }
+
+        // Test survey response path list is not null or empty.
+        if (!Validation.isNullOrEmpty(filteredPaths)) {
+            // Get filtered survey response filenames for this survey.
+            filteredNames = FileUtils.parseAllFilenames(filteredPaths);
+
+            // Add the return option.
+            filteredNames.add(SurveyMenu.RETURN);
+
+            // Get user chosen survey response.
+            choice = SurveyApp.getUserMenuChoice("Please select a response to " + action + ":", filteredNames);
+
+            // Test user did not choose to return.
+            if (!choice.equals(SurveyMenu.RETURN)) {
+                // Get survey response path from list.
+                result = filteredPaths.get(filteredNames.indexOf(choice));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Get a list of all survey response file paths and filter out the survey responses
+     * from all other surveys.
+     *
+     * @param surveyName the survey name
+     * @return a filtered list of survey response file paths
+     */
+    protected static List<String> getSurveyResponsePath(String surveyName) {
+        int surveyNameLength;
+        String nameSubstring;
+        List<String> allSurveyResponsePaths = null;
+        List<String> result = new ArrayList<>();
+
+        try {
+            // Try to get the paths of all survey responses.
+            allSurveyResponsePaths = getAllSurveyResponsePaths();
+        } catch (IllegalStateException ignore) {
+        }
+
+        if (allSurveyResponsePaths != null && !allSurveyResponsePaths.isEmpty()) {
+            // Get the length of the survey response survey's name.
+            surveyNameLength = surveyName.length();
+
+            // Filter out survey responses for all other surveys.
+            for (String s : allSurveyResponsePaths) {
+                // Get the survey name from list of all survey response name.
+                nameSubstring = s.substring(0, surveyNameLength);
+
+                // Test if this survey name from list of all survey response names is
+                // equal to the survey responses survey's name. If it is, then add it.
+                if (nameSubstring.equals(surveyName)) result.add(s);
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Retrieves the filenames of all available survey responses that are
      * currently stored on disk in a List.
      *
      * @return List<String> for all available survey response filenames.
      * This can be empty.
      */
-    protected List<String> getAllSurveyResponseNames() {
+    protected static List<String> getAllSurveyResponseNames() {
         return FileUtils.getAllFilenamesInDir(basePath);
+    }
+
+    /**
+     * Retrieves the file paths of all available survey responses that are
+     * currently stored on disk in a List.
+     *
+     * @return List<String> for all available survey response file paths.
+     * This can be empty.
+     */
+    protected static List<String> getAllSurveyResponsePaths() {
+        return FileUtils.getAllFilePathsInDir(basePath);
     }
 
     /**
@@ -210,8 +304,9 @@ public class SurveyResponse implements Serializable {
         boolean isCorrupted;
         String surveyResponseName;
         int corruptedCount = 0;
-        SurveyResponse sr = null;
+        List<String> allSurveyResponseNames;
         List<SurveyResponse> result = null;
+        SurveyResponse sr = null;
 
         // Get length of survey name.
         int length = surveyName.length();
@@ -222,7 +317,7 @@ public class SurveyResponse implements Serializable {
         // Test survey response path list is not null or empty.
         if (!Validation.isNullOrEmpty(allSurveyResponseFilePaths)) {
             // Get all survey response filenames.
-            List<String> allSurveyResponseNames = FileUtils.parseAllFilenames(allSurveyResponseFilePaths);
+            allSurveyResponseNames = FileUtils.parseAllFilenames(allSurveyResponseFilePaths);
 
             // Initialize survey response list.
             result = new ArrayList<>();
@@ -264,11 +359,48 @@ public class SurveyResponse implements Serializable {
     }
 
     /**
+     * Retrieves the filenames of all available SurveyResponses that are currently stored on disk in a List.
+     *
+     * @return List<String> for all available survey responses filenames. This can be empty.
+     */
+    public static List<String> getAllSurveyResponseFileNames() {
+        return FileUtils.getAllFilenamesInDir(basePath);
+    }
+
+    /**
      * Retrieves the file paths of all available SurveyResponses that are currently stored on disk in a List.
      *
      * @return List<String> for all available survey responses file paths. This can be empty.
      */
     public static List<String> getAllSurveyResponseFilePaths() {
         return FileUtils.getAllFilePathsInDir(basePath);
+    }
+
+    public static List<String> getFilteredSurveyResponseFilePaths(String surveyFilename) {
+        int length, i;
+        List<String> allFilenames;
+        List<String> result = null;
+
+        // Get all response paths.
+        List<String> allPaths = FileUtils.getAllFilePathsInDir(basePath);
+
+        // Test response filenames list is not empty.
+        if (!allPaths.isEmpty()) {
+            // Get all response filenames.
+            allFilenames = FileUtils.parseAllFilenames(allPaths);
+
+            // Initialize filtered response file path list.
+            result = new ArrayList<>();
+
+            // Get length of survey name.
+            length = surveyFilename.length();
+
+            // Filter response file path list.
+            for (i = 0; i < allFilenames.size(); i++)
+                if (allFilenames.get(i).substring(0, length).equals(surveyFilename))
+                    result.add(allPaths.get(i));
+        }
+
+        return result;
     }
 }

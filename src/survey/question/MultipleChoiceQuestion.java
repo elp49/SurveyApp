@@ -232,15 +232,15 @@ public class MultipleChoiceQuestion extends Question {
             if (!(isValidResponse = !Validation.isNullOrBlank(response)))
                 SurveyApp.out.displayNote("Your " + responseType + " cannot be empty.");
 
-            // Test response is more than a single character
+                // Test response is more than a single character
             else if (!(isValidResponse = (response.length() == 1)))
                 SurveyApp.out.displayNote("You must enter one character at a time.");
 
-            // Test response is impossible choice given the choice list.
+                // Test response is impossible choice given the choice list.
             else if (!(isValidResponse = isPossibleChoiceChar(response.charAt(0))))
                 SurveyApp.out.displayNote(response + " is not a valid " + responseType);
 
-            // Test response choice has already been chosen.
+                // Test response choice has already been chosen.
             else if (!(isValidResponse = isValidResponse(response)))
                 SurveyApp.out.displayNote("You've already entered choice " + response);
 
@@ -289,9 +289,10 @@ public class MultipleChoiceQuestion extends Question {
         boolean isValidResponse = true;
 
         // Test if choice has already been recorded.
-        for (String existingChoice : questionResponse.getResponseList())
-            if (!(isValidResponse = !response.equals(existingChoice)))
-                break;
+        if (questionResponse != null && !questionResponse.getResponseList().isEmpty())
+            for (String existingChoice : questionResponse.getResponseList())
+                if (!(isValidResponse = !response.equals(existingChoice)))
+                    break;
 
         return isValidResponse;
     }
@@ -386,12 +387,21 @@ public class MultipleChoiceQuestion extends Question {
     @Override
     public QuestionResponse readCorrectAnswer() {
         int i;
-        String correctAnswer;
+        String answerPrompt, correctAnswer;
         QuestionResponse answerKey = new QuestionResponse();
 
+        // Display choices.
+        SurveyApp.out.displayQuestionChoiceList(choiceList);
+
         for (i = 1; i <= numResponses; i++) {
+            // Create answer prompt.
+            if (numResponses == 1)
+                answerPrompt = "Enter the correct " + responseType + ":";
+            else
+                answerPrompt = "Enter correct " + responseType + " #" + i + ":";
+
             // Read a correct answer.
-            SurveyApp.out.displayMenuPrompt("Enter correct " + responseType + " #" + i + ":");
+            SurveyApp.out.displayMenuPrompt(answerPrompt);
             correctAnswer = readValidQuestionResponse();
 
             // Add correct answer to answer key.
@@ -399,5 +409,24 @@ public class MultipleChoiceQuestion extends Question {
         }
 
         return answerKey;
+    }
+
+    @Override
+    public void displayAnswer(QuestionResponse answer) {
+        int i;
+        char answerChar;
+        int choiceIndex;
+
+        for (i = 0; i < answer.size(); i++) {
+            // Get correct answer character.
+            answerChar = answer.get(i).charAt(0);
+
+            // Get index of correct answer.
+            choiceIndex = getChoiceCharIndex(answerChar);
+
+            SurveyApp.out.displayQuestionResponse(answerChar + ") " + choiceList.get(choiceIndex), false, true);
+        }
+
+        SurveyApp.out.displayQuestionResponse("", true, false);
     }
 }
