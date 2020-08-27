@@ -34,7 +34,7 @@ public class TrueFalseQuestion extends MultipleChoiceQuestion {
     }
 
     @Override
-    public void modify() {
+    public void modify(boolean isTest) {
         // Modify the question prompt.
         modifyPrompt();
     }

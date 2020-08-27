@@ -31,13 +31,13 @@ public class EssayQuestion extends Question {
     }
 
     @Override
-    public void modify() {
+    public void modify(boolean isTest) {
         // Modify the question prompt. If return value is true,
         // then user chose to return to the previous menu.
         boolean isReturn = modifyPrompt();
 
         // Test return value.
-        if (!isReturn) modifyNumResponses();
+        if (!isReturn && !isTest) modifyNumResponses();
     }
 
     @Override
@@ -77,7 +77,7 @@ public class EssayQuestion extends Question {
                 SurveyApp.out.displayQuestionResponse(s);
 
             // Link break.
-            SurveyApp.out.displayNote("");
+            SurveyApp.out.displayNote("", true);
         }
     }
 

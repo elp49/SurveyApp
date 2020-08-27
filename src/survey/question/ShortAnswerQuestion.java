@@ -96,7 +96,7 @@ public class ShortAnswerQuestion extends EssayQuestion {
         SurveyApp.out.displayQuestion(prompt);
 
         for (i = 0; i < resultResponseList.size(); i++) {
-            SurveyApp.out.displayQuestionResponse(resultResponseList.get(i) + " " + resultResponseCountList.get(i));
+            SurveyApp.out.displayQuestionResponse(resultResponseList.get(i) + ": " + resultResponseCountList.get(i));
         }
     }
 
@@ -129,10 +129,11 @@ public class ShortAnswerQuestion extends EssayQuestion {
         int i;
 
         // Test for single correct answer.
-        if (numResponses == 1)
+        if (numResponses == 1) {
+            SurveyApp.out.displayNote("The correct " + responseType + " is: ");
             SurveyApp.out.displayQuestionResponse(answer.get(0), false, true);
-
-        else {
+        } else {
+            SurveyApp.out.displayNote("The correct " + responseType + "s are: ");
             for (i = 0; i < answer.size(); i++) {
                 SurveyApp.out.displayQuestionResponse(answer.get(i));
             }

@@ -133,7 +133,7 @@ public class MatchingQuestion extends Question {
     }
 
     @Override
-    public void modify() {
+    public void modify(boolean isTest) {
         // Modify the question prompt. If return value is true,
         // then user chose to return to the previous menu.
         boolean isReturn = modifyPrompt();
@@ -449,6 +449,9 @@ public class MatchingQuestion extends Question {
             SurveyApp.out.displayQuestionResponse(resultResponseCountList.get(i).toString());
             for (String s : resultResponseList.get(i))
                 SurveyApp.out.displayQuestionResponse(s);
+
+            // Line break.
+            SurveyApp.out.displayNote("", true);
         }
     }
 
@@ -483,6 +486,9 @@ public class MatchingQuestion extends Question {
         ChoiceList colOne = choiceSet.get(0);
         ChoiceList colTwo = choiceSet.get(1);
 
+        SurveyApp.out.displayNote("The correct " + responseType + "es are: ");
+
+        // Display correct matches.
         for (i = 0; i < answer.size(); i++) {
             // Split the match.
             match = splitMatch(answer.get(i));

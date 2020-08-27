@@ -177,7 +177,7 @@ public class Survey implements Serializable {
                     index = options.indexOf(choice);
 
                     // Modify question.
-                    questionList.get(index).modify();
+                    questionList.get(index).modify(surveyType.equalsIgnoreCase("test"));
                 }
             } while (!isReturn);
         } else {

@@ -84,7 +84,7 @@ public abstract class Question implements Serializable {
 
     public abstract void display();
 
-    public abstract void modify();
+    public abstract void modify(boolean isTest);
 
     /**
      * Determine if the user would like to modify their question prompt.

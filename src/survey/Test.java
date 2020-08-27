@@ -92,7 +92,6 @@ public class Test extends Survey {
             q.display();
 
             // Display correct answer.
-            SurveyApp.out.displayNote("The correct " + q.getResponseType() + " is ");
             q.displayAnswer(answerKey.get(i));
         }
     }

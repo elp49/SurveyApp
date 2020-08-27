@@ -156,7 +156,7 @@ public class MultipleChoiceQuestion extends Question {
     }
 
     @Override
-    public void modify() {
+    public void modify(boolean isTest) {
         // Modify the question prompt. If return value is true,
         // then user chose to return to the previous menu.
         boolean isReturn = modifyPrompt();
@@ -167,7 +167,7 @@ public class MultipleChoiceQuestion extends Question {
             isReturn = modifyChoice();
 
             // Test return value.
-            if (!isReturn)
+            if (!isReturn && !isTest)
                 modifyNumResponses();
         }
     }
@@ -416,6 +416,12 @@ public class MultipleChoiceQuestion extends Question {
         int i;
         char answerChar;
         int choiceIndex;
+
+        // Test for single response.
+        if (numResponses == 1)
+            SurveyApp.out.displayNote("The correct " + responseType + " is: ");
+        else
+            SurveyApp.out.displayNote("The correct " + responseType + "s are: ");
 
         for (i = 0; i < answer.size(); i++) {
             // Get correct answer character.
